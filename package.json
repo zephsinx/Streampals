@@ -1,0 +1,23 @@
+{
+  "name": "streamerworm",
+  "version": "0.1.0",
+  "description": "A silly lil' silly worm for your streams.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "streamerworm",
+    "twitch",
+    "youtube",
+    "stream"
+  ],
+  "author": "zephsinx <zephsinx@gmail.com> (https://github.com/zephsinx)",
+  "contributors": [
+    "dudlik, zephsinx"
+  ],
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
