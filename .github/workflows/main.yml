@@ -1,0 +1,2 @@
+- name: NodeJS Create Release
+  uses: gregoranders/nodejs-create-release@v0.0.18
