@@ -13,16 +13,14 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
 - Max media dimensions can be set via the `maxHeight` and `maxWidth` query parameters.
    - Media will be shrunk to fit the smallest of the two values.
+- LICENSE file added.
 
 ### Changed
 
-- `maxDelay` and `minDelay` delay can now be set to the same value.
+- `max` and `min` delay can now be set to the same value.
 - Media position is now randomized between screen corners each time it appears.
 - Removed additional unused media
-
-### Fixed
-
-- Fixed CHANGELOG reference to non-existent parameters `max` and `min` (to `maxDelay` and `minDelay`.)
+- Populated README file
 
 ### Performance
 
@@ -37,7 +35,7 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
 ### Changed
 
-- `maxDelay` and `minDelay` parameter units changes to be in Minutes (previously Seconds)
+- `max` and `min` parameter units changes to be in Minutes (previously Seconds)
 
 ## [0.1.0] - 2022-12-22
 
