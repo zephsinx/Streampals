@@ -21,7 +21,7 @@ const mediaListElement = media.MediaList[0];
 const tagName = getTagNameFromFile(mediaListElement.path);
 const element = prepareElement(tagName, config);
 
-// Append media element to media div
+// Create and append media element to media div
 const mediaDiv = document.getElementById("media-div");
 mediaDiv.appendChild(element);
 
