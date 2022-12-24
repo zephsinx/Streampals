@@ -4,9 +4,12 @@
 const constants = require('./constants');
 const media = require('./medialist');
 
-// Set default time bounds to use if none are provided
+// Global defaults
 const defaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
 const defaultMaxMillis = constants.DefaultMaxMinutes * 60 * 1000;
+
+// Get config settings
+const config = getStreamerWormConfig();
 
 // Set default media to the first entry in the list
 const mediaListElement = media.MediaList[0];
@@ -19,9 +22,6 @@ const element = prepareElement(tagName);
 const mediaDiv = document.getElementById("media-div");
 mediaDiv.appendChild(element);
 
-// Get config settings
-const config = getStreamerWormConfig();
-
 // Initialize media loop
 playMedia(element);
 
@@ -30,9 +30,7 @@ playMedia(element);
 // Shows and plays media after a random delay, then hides the media after durationMillis expires.
 function playMedia(element) {
     // Skip delay between media plays when config.skipDelay == true
-    let delay = config.skipDelay
-        ? 0
-        : randomIntFromInterval(config.minDelay, config.maxDelay);
+    let delay = randomIntFromInterval(config.minDelay, config.maxDelay);
     
     // Display the image after the random delay expires
     setTimeout(() => {
@@ -77,25 +75,39 @@ function getStreamerWormConfig() {
 
     // todo: (param) Image display coordinates (where on the screen should it show up)
     let skipDelay = parseBool(urlParams.skipDelay);
-    let minDelayMillis = isValidDelay(urlParams.min) ? (urlParams.min * 60 * 1000) : defaultMinMillis; 
-    let maxDelayMillis = isValidDelay(urlParams.max) ? (urlParams.max * 60 * 1000) : defaultMaxMillis;
-    let slideshow = parseBool(urlParams.slideshow);
+    let maxDelayMillis = getDelayMillis(skipDelay, urlParams.max, defaultMaxMillis);
+    let minDelayMillis = getDelayMillis(skipDelay, urlParams.min, defaultMinMillis);
     let shouldRandomize = parseBool(urlParams.randomize);
+    let slideshow = parseBool(urlParams.slideshow);
+    
+    let config = {
+        maxDelay: maxDelayMillis,         // The maximum delay between media plays (ignored if skipDelay is true)
+        minDelay: minDelayMillis,         // The minimum delay between media plays (ignored if skipDelay is true)
+        shouldRandomize: shouldRandomize, // If the displayed media should be randomized from the media list (ignored if slideshow is false)
+        slideshow: slideshow,             // If the displayed media should change on each loop
+    };
+    
+    return validateConfig(config);
+}
 
-    // minDelayMillis must be less than maxDelayMillis
-    if (maxDelayMillis <= minDelayMillis)
+// Validate and update config if invalid.
+function validateConfig(config) {
+    // minDelayMillis must be less than or equal to maxDelayMillis, else use defaults
+    if (config.maxDelayMillis < config.minDelayMillis)
     {
-        minDelayMillis = defaultMinMillis;
-        maxDelayMillis = defaultMaxMillis;
+        config.maxDelayMillis = defaultMaxMillis;
+        config.minDelayMillis = defaultMinMillis;
     }
     
-    return {
-        skipDelay: skipDelay,             // If the delay between media plays should be skipped
-        minDelay: minDelayMillis,         // The minimum delay between media plays (ignored if skipDelay is true)
-        maxDelay: maxDelayMillis,         // The maximum delay between media plays (ignored if skipDelay is true)
-        slideshow: slideshow,             // If the displayed media should change on each loop
-        shouldRandomize: shouldRandomize, // If the displayed media should be randomized from the media list (ignored if slideshow is false)
-    };
+    return config;
+}
+
+// Validate and calculate delay in milliseconds from params
+function getDelayMillis(skipDelay, delayMinutes, defaultDelay) {
+    if (skipDelay)
+        return 0;
+
+    return isValidDelay(delayMinutes) ? (delayMinutes * 60 * 1000) : defaultDelay;
 }
 
 // Check that provided string is a valid number and positive.
