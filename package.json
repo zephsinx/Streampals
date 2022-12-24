@@ -12,10 +12,8 @@
     "youtube",
     "stream"
   ],
-  "author": "zephsinx <zephsinx@gmail.com> (https://github.com/zephsinx)",
-  "contributors": [
-    "dudlik, zephsinx"
-  ],
+  "author": { "name": "zephsinx", "email": "zephsinx@gmail.com", "url": "https://github.com/zephsinx)" },
+  "contributors": [{ "name": "Dudlik", "url": "https://dudlik.co" }],
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.2"
