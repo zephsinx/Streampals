@@ -16,8 +16,17 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
 ### Changed
 
-- `max` and `min` delay can now be set to the same value.
+- `maxDelay` and `minDelay` delay can now be set to the same value.
 - Media position is now randomized between screen corners each time it appears.
+- Removed additional unused media
+
+### Fixed
+
+- Fixed CHANGELOG reference to non-existent parameters `max` and `min` (to `maxDelay` and `minDelay`.)
+
+### Performance
+
+- JS bundles optimized for long-term caching via webpack `contenthash`.
 
 ## [0.2.0] - 2022-12-23
 
@@ -28,7 +37,7 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
 ### Changed
 
-- `max` and `min` parameter units changes to be in Minutes (previously Seconds)
+- `maxDelay` and `minDelay` parameter units changes to be in Minutes (previously Seconds)
 
 ## [0.1.0] - 2022-12-22
 
