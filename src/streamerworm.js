@@ -9,7 +9,7 @@ const defaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
 const defaultMaxMillis = constants.DefaultMaxMinutes * 60 * 1000;
 
 // Global values
-let lastCorner = randomIntFromInterval(0, 3);
+let lastCorner;
 
 // Get config settings
 const config = getStreamerWormConfig();
@@ -176,6 +176,8 @@ function prepareElement(tagName, config) {
     mediaElement.style.maxHeight = config.maxHeight + '%';
     mediaElement.style.maxWidth = config.maxWidth + '%';
     mediaElement.style.position = 'absolute';
+
+    setPosition(mediaElement);
     
     switch (tagName) {
         case 'img':
