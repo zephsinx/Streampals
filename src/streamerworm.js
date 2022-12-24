@@ -8,6 +8,9 @@ const media = require('./medialist');
 const defaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
 const defaultMaxMillis = constants.DefaultMaxMinutes * 60 * 1000;
 
+// Global values
+let lastCorner = randomIntFromInterval(0, 3);
+
 // Get config settings
 const config = getStreamerWormConfig();
 
@@ -16,7 +19,7 @@ const mediaListElement = media.MediaList[0];
 
 // Build media element based on file extension
 const tagName = getTagNameFromFile(mediaListElement.path);
-const element = prepareElement(tagName);
+const element = prepareElement(tagName, config);
 
 // Append media element to media div
 const mediaDiv = document.getElementById("media-div");
@@ -49,8 +52,8 @@ function playMedia(element) {
         
         // Hide image/video after it plays for the desired duration, and requeue the media timer
         setTimeout(() => {
-
             element.style.visibility = 'hidden';
+            setPosition(element);
             playMedia(element);
         }, mediaListElement.durationMillis);
         
@@ -60,6 +63,42 @@ function playMedia(element) {
 // Returns a random integer between min and max (inclusive)
 function randomIntFromInterval(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+function setPosition(element) {
+    let corner = randomIntFromInterval(0, 3);
+    while (lastCorner === corner) {
+        corner = randomIntFromInterval(0, 3);
+    }
+    lastCorner = corner;
+
+    element.style.top = '';
+    element.style.bottom = '';
+    element.style.left = '';
+    element.style.right = '';
+
+    switch (corner) {
+        // 0: top left
+        case 0:
+            element.style.top = '0px';
+            element.style.left = '0px';
+            break;
+        // 1: top right
+        case 1:
+            element.style.top = '0px';
+            element.style.right = '0px';
+            break;
+        // 2: bottom right
+        case 2:
+            element.style.bottom = '0px';
+            element.style.right = '0px';
+            break;
+        // 3: bottom left
+        case 3:
+            element.style.bottom = '0px';
+            element.style.left = '0px';
+            break;
+    }
 }
 
 //#endregion
@@ -77,14 +116,18 @@ function getStreamerWormConfig() {
     let skipDelay = parseBool(urlParams.skipDelay);
     let maxDelayMillis = getDelayMillis(skipDelay, urlParams.max, defaultMaxMillis);
     let minDelayMillis = getDelayMillis(skipDelay, urlParams.min, defaultMinMillis);
-    let shouldRandomize = parseBool(urlParams.randomize);
-    let slideshow = parseBool(urlParams.slideshow);
+    let maxHeight = isValidNumericValue(urlParams.maxHeight) ? urlParams.maxHeight : constants.DefaultMaxHeight;
+    let maxWidth = isValidNumericValue(urlParams.maxWidth) ? urlParams.maxWidth : constants.DefaultMaxWidth;
+    // let shouldRandomize = parseBool(urlParams.randomize);
+    // let slideshow = parseBool(urlParams.slideshow);
     
     let config = {
         maxDelay: maxDelayMillis,         // The maximum delay between media plays (ignored if skipDelay is true)
         minDelay: minDelayMillis,         // The minimum delay between media plays (ignored if skipDelay is true)
-        shouldRandomize: shouldRandomize, // If the displayed media should be randomized from the media list (ignored if slideshow is false)
-        slideshow: slideshow,             // If the displayed media should change on each loop
+        maxHeight: maxHeight,             // The maximum height the media should take up. Image will be resized to fit if larger.
+        maxWidth: maxWidth,               // The maximum width the media should take up. Image will be resized to fit if larger.
+        // shouldRandomize: shouldRandomize, // If the displayed media should be randomized from the media list (ignored if slideshow is false)
+        // slideshow: slideshow,             // If the displayed media should change on each loop
     };
     
     return validateConfig(config);
@@ -107,11 +150,11 @@ function getDelayMillis(skipDelay, delayMinutes, defaultDelay) {
     if (skipDelay)
         return 0;
 
-    return isValidDelay(delayMinutes) ? (delayMinutes * 60 * 1000) : defaultDelay;
+    return isValidNumericValue(delayMinutes) ? (delayMinutes * 60 * 1000) : defaultDelay;
 }
 
 // Check that provided string is a valid number and positive.
-function isValidDelay(numberString) {
+function isValidNumericValue(numberString) {
     return !isNaN(numberString) && !isNaN(parseFloat(numberString)) && parseFloat(numberString) > 0;
 }
 
@@ -125,11 +168,14 @@ function parseBool(boolString) {
 //#region Element Configuration
 
 // Configure element to display based on tagName
-function prepareElement(tagName) {
+function prepareElement(tagName, config) {
     // Create img or video element based on tagName
     let mediaElement = document.createElement(tagName);
     mediaElement.id = 'rendered-media';
-    mediaElement.style = 'max-width: 25%; max-height: 25%; object-fit: contain';
+    mediaElement.style.objectFit = 'contain';
+    mediaElement.style.maxHeight = config.maxHeight + '%';
+    mediaElement.style.maxWidth = config.maxWidth + '%';
+    mediaElement.style.position = 'absolute';
     
     switch (tagName) {
         case 'img':
@@ -137,7 +183,7 @@ function prepareElement(tagName) {
         case 'video':
             return configureVideoElement(mediaElement);
         default:
-            return mediaElement;
+            throw 'Tag name ' + tagName + ' not recognized';
     }
 }
 

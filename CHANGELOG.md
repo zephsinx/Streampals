@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
+## [Unreleased Changes]
+
+### Added
+
+- Max media dimensions can be set via the `maxHeight` and `maxWidth` query parameters.
+   - Media will be shrunk to fit the smallest of the two values.
+
+### Changed
+
+- `max` and `min` delay can now be set to the same value.
+- Media position is now randomized between screen corners each time it appears.
+
 ## [0.2.0] - 2022-12-23
 
 ### Added
