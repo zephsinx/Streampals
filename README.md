@@ -40,7 +40,7 @@ Before you begin, ensure you have met the following requirements:
 
 Instructions on deploying to a server coming soon.
 
-StreamerWorm is also available as a Docker image at https://hub.docker.com/repository/docker/zephsinx/streamerworm
+StreamerWorm is also available as a Docker image on [Docker Hub](https://hub.docker.com/repository/docker/zephsinx/streamerworm).
 
 To use, run the following command and replace `[PORT]` with the port you want the application to run on:
 
