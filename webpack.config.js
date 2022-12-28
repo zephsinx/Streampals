@@ -12,11 +12,6 @@ module.exports = {
     },
     plugins: [
         new CleanWebpackPlugin(),
-        new CopyWebpackPlugin({
-            patterns: [
-                {from: 'src/media', to: 'media'},
-            ]
-        }),
         new HtmlWebpackPlugin({
             template: 'indexTemplate.html',
             title: 'StreamerWorm',

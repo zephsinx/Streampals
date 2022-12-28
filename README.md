@@ -38,7 +38,21 @@ Before you begin, ensure you have met the following requirements:
 
 ## Deployment
 
-Coming soon.
+Instructions on deploying to a server coming soon.
+
+StreamerWorm is also available as a Docker image at https://hub.docker.com/repository/docker/zephsinx/streamerworm
+
+To use, run the following command and replace `[PORT]` with the port you want the application to run on:
+
+```shell
+docker run -it -d -p [PORT]:3000 zephsinx/streamerworm:latest
+```
+
+For example, the following will make the application run on port `3123`.
+
+```shell
+docker run -it -d -p 3123:3000 zephsinx/streamerworm:latest
+```
 
 ## How to Use
 
@@ -51,7 +65,7 @@ Coming soon.
 
 ### Configuring Behavior
 
-The default behavior of StreamerWorm can be modified by adding query parameters to the StreamerWorm URL. 
+The default behavior of StreamerWorm can be modified by adding query parameters to the StreamerWorm URL. Hosted URL coming soon.
 
 Example:
 ```http request

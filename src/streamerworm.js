@@ -2,35 +2,36 @@
 
 // Constants
 const constants = require('./constants');
-const media = require('./medialist');
 
 // Global defaults
 const defaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
 const defaultMaxMillis = constants.DefaultMaxMinutes * 60 * 1000;
 
-// Global values
+// Div containing the media to display
+const mediaDiv = document.getElementById("media-div");
+
+// Global variables
 let lastCorner;
+let tagName;
+let element;
+let config;
 
 // Get config settings
-const config = getStreamerWormConfig();
-
-// Set default media to the first entry in the list
-const mediaListElement = media.MediaList[0];
-
-// Build media element based on file extension
-const tagName = getTagNameFromFile(mediaListElement.path);
-const element = prepareElement(tagName, config);
-
-// Create and append media element to media div
-const mediaDiv = document.getElementById("media-div");
-mediaDiv.appendChild(element);
-
-// Initialize media loop
-playMedia(element);
+getStreamerWormConfig()
+    .then(configVal => {
+        config = configVal;
+        tagName = getTagNameFromFile(config.mediaUrl);
+        element = prepareElement(tagName, config);
+    })
+    .then(() => {
+        // Create and append media element to media div
+        mediaDiv.appendChild(element);
+        playMedia(element);
+    });
 
 //#region Media Methods
 
-// Shows and plays media after a random delay, then hides the media after durationMillis expires.
+// Shows and plays media after a random delay, then hides the media after durationMillis expires
 function playMedia(element) {
     // Skip delay between media plays when config.skipDelay == true
     let delay = randomIntFromInterval(config.minDelay, config.maxDelay);
@@ -40,7 +41,7 @@ function playMedia(element) {
         // Reset image source to replay in the case of a GIF
         if (tagName === 'img') {
             element.src = '';
-            element.src = mediaListElement.path;
+            element.src = config.mediaUrl;
         }
         // Restart video and play in the case of a WebM
         else {
@@ -48,15 +49,14 @@ function playMedia(element) {
             element.play();
         }
         // Make media visible
-        element.style.visibility = 'visible';
+        mediaDiv.style.visibility = 'visible';
         
         // Hide image/video after it plays for the desired duration, and requeue the media timer
         setTimeout(() => {
-            element.style.visibility = 'hidden';
+            mediaDiv.style.visibility = 'hidden';
             setPosition(element);
             playMedia(element);
-        }, mediaListElement.durationMillis);
-        
+        }, config.mediaDuration);
     }, delay);
 }
 
@@ -65,6 +65,7 @@ function randomIntFromInterval(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
+// Set position of media element on page
 function setPosition(element) {
     let corner = randomIntFromInterval(0, 3);
     while (lastCorner === corner) {
@@ -106,26 +107,31 @@ function setPosition(element) {
 //#region StreamerWorm configuration methods
 
 // Parse URL parameters from URL
-function getStreamerWormConfig() {
+async function getStreamerWormConfig() {
     // Get parameters from browser URL
     let urlParams = new Proxy(new URLSearchParams(window.location.search), {
         get: (searchParams, prop) => searchParams.get(prop || ''),
     });
 
-    // todo: (param) Image display coordinates (where on the screen should it show up)
     let skipDelay = parseBool(urlParams.skipDelay);
     let maxDelayMillis = getDelayMillis(skipDelay, urlParams.max, defaultMaxMillis);
     let minDelayMillis = getDelayMillis(skipDelay, urlParams.min, defaultMinMillis);
     let maxHeight = isValidNumericValue(urlParams.maxHeight) ? urlParams.maxHeight : constants.DefaultMaxHeight;
     let maxWidth = isValidNumericValue(urlParams.maxWidth) ? urlParams.maxWidth : constants.DefaultMaxWidth;
+    let mediaUrl = urlParams.mediaUrl ? urlParams.mediaUrl : constants.DefaultMediaPath;
+    
+    let mediaDuration = await getMediaDuration(mediaUrl);
+    
     // let shouldRandomize = parseBool(urlParams.randomize);
     // let slideshow = parseBool(urlParams.slideshow);
     
     let config = {
-        maxDelay: maxDelayMillis,         // The maximum delay between media plays (ignored if skipDelay is true)
-        minDelay: minDelayMillis,         // The minimum delay between media plays (ignored if skipDelay is true)
-        maxHeight: maxHeight,             // The maximum height the media should take up. Image will be resized to fit if larger.
-        maxWidth: maxWidth,               // The maximum width the media should take up. Image will be resized to fit if larger.
+        maxDelay: maxDelayMillis,            // The maximum delay between media plays (ignored if skipDelay is true)
+        minDelay: minDelayMillis,            // The minimum delay between media plays (ignored if skipDelay is true)
+        maxHeight: maxHeight,                // The maximum height the media should take up. Image will be resized to fit if larger
+        maxWidth: maxWidth,                  // The maximum width the media should take up. Image will be resized to fit if larger
+        mediaUrl: mediaUrl,                  // The URL or path of the media to display
+        mediaDuration: mediaDuration,        // The duration of the media to display, used for knowing how long to display it for
         // shouldRandomize: shouldRandomize, // If the displayed media should be randomized from the media list (ignored if slideshow is false)
         // slideshow: slideshow,             // If the displayed media should change on each loop
     };
@@ -142,6 +148,9 @@ function validateConfig(config) {
         config.minDelayMillis = defaultMinMillis;
     }
     
+    if (config.mediaDuration < 100)
+        config.mediaDuration = 100;
+    
     return config;
 }
 
@@ -153,7 +162,7 @@ function getDelayMillis(skipDelay, delayMinutes, defaultDelay) {
     return isValidNumericValue(delayMinutes) ? (delayMinutes * 60 * 1000) : defaultDelay;
 }
 
-// Check that provided string is a valid number and positive.
+// Check that provided string is a valid number and positive
 function isValidNumericValue(numberString) {
     return !isNaN(numberString) && !isNaN(parseFloat(numberString)) && parseFloat(numberString) > 0;
 }
@@ -161,6 +170,38 @@ function isValidNumericValue(numberString) {
 // Returns the value of a string as a boolean. Defaults to "false" if not a valid boolean
 function parseBool(boolString) {
     return boolString === 'true';
+}
+
+// Fancy method to get Media length
+async function getMediaDuration(mediaUrl) {
+    return await fetch(mediaUrl, { mode: 'cors' })
+        .then(res => {
+            if (res.ok)
+                return Promise.resolve(res);
+            return Promise.reject(res);
+        })
+        .then(res => res.arrayBuffer())
+        .then(ab => getGifDuration(new Uint8Array(ab)))
+        .catch(err => {
+            throw new Error(constants.FetchImageError.replace('{0}', mediaUrl).replace('{1}', `${err.status} - ${err.statusText}`));
+        });
+
+    /** @param {Uint8Array} uint8 */
+    function getGifDuration (uint8) {
+        let duration = 0
+        for (let i = 0, len = uint8.length; i < len; i++) {
+            if (uint8[i] === 0x21
+                && uint8[i + 1] === 0xF9
+                && uint8[i + 2] === 0x04
+                && uint8[i + 7] === 0x00)
+            {
+                const delay = (uint8[i + 5] << 8) | (uint8[i + 4] & 0xFF)
+                duration += delay < 2 ? 10 : delay
+            }
+        }
+        // Convert to milliseconds
+        return duration * 10
+    }
 }
 
 //#endregion
@@ -181,9 +222,9 @@ function prepareElement(tagName, config) {
     
     switch (tagName) {
         case 'img':
-            return configureImageElement(mediaElement);
+            return mediaElement;
         case 'video':
-            return configureVideoElement(mediaElement);
+            return configureVideoElement(mediaElement, config.mediaUrl);
         default:
             throw 'Tag name ' + tagName + ' not recognized';
     }
@@ -191,8 +232,7 @@ function prepareElement(tagName, config) {
 
 // Get the appropriate element tag name from the media file extension
 function getTagNameFromFile(fileName) {
-    let tagName;
-    let fileExtension = fileName.slice((Math.max(0, fileName.lastIndexOf(".")) || Infinity) + 1);
+    let fileExtension = getFileExtension(fileName)
 
     switch (fileExtension) {
         case 'apng':
@@ -206,28 +246,29 @@ function getTagNameFromFile(fileName) {
         case 'svg':
         case 'jfif':
         case 'webp':
-            tagName = 'img';
-            break;
+            return 'img';
         case 'webm':
-            tagName = 'video';
-            break;
-        default:
-            throw 'File extension .' + fileExtension + ' is not yet supported';
+            return 'video';
+        default: {
+            if (!fileExtension)
+                console.warn(constants.ExtensionNotFoundError);
+            else
+                console.warn(constants.ExtensionNotSupportedError.replace('{0}', fileExtension));
+        }
+        
+        return 'img';
     }
-
-    return tagName;
 }
 
-// Set Image properties
-function configureImageElement(image) {
-    // todo: Configure image
-    return image;
+// Get extension from file path
+function getFileExtension(fileName) {
+    return fileName.slice((Math.max(0, fileName.lastIndexOf(".")) || Infinity) + 1);
 }
 
 // Set Video properties
-function configureVideoElement(videoElement) {
+function configureVideoElement(videoElement, mediaUrl) {
     let videoSource = document.createElement('source');
-    videoSource.src = mediaListElement.path;
+    videoSource.src = mediaUrl;
     videoSource.type = 'video/webm';
 
     // Note: autoplay only works in Chrome after a user has interacted with the DOM unless the muted tag is used
