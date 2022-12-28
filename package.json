@@ -1,10 +1,11 @@
 {
   "name": "@zephsinx/streamerworm",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A silly lil' silly worm for your streams.",
   "main": "index.js",
   "scripts": {
-    "build": "webpack"
+    "build": "npx webpack --mode production",
+    "start": "node index.js"
   },
   "keywords": [
     "streamerworm",

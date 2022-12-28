@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
-## [Unreleased Changes]
+## [Unreleased]
+
+### Added
+
+- Dockerfile for running in docker container.
+- 
+
+## [0.3.0] - 2022-12-24
 
 ### Added
 

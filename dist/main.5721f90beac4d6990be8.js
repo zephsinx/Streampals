@@ -1,7 +1,64 @@
+/******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
+
+/***/ 279:
+/*!**************************!*\
+  !*** ./src/constants.js ***!
+  \**************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+// StreamerWorm constants.
+exports.DefaultMinMinutes = 30;
+exports.DefaultMaxMinutes = 90;
+
+exports.DefaultMaxHeight = '25'; // Percentage value
+exports.DefaultMaxWidth = '25'; // Percentage value
+
+exports.DefaultMediaPath = 'default-media.gif';
+
+exports.ExtensionNotFoundError = 'Unable to determine file extension from media URL. Defaulting to `img` tag';
+exports.ExtensionNotSupportedError = 'File extension not yet supported. Defaulting to `img` tag\'. Extension found: `{0}`';
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
+(() => {
 "use strict";
+/*!*****************************!*\
+  !*** ./src/streamerworm.js ***!
+  \*****************************/
+
 
 // Constants
-const constants = require('./constants');
+const constants = __webpack_require__(/*! ./constants */ 279);
 
 // Global defaults
 const defaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
@@ -27,10 +84,10 @@ getStreamerWormConfig()
         mediaDiv.appendChild(element);
     
         // Initialize media loop if there was no issue fetching the media file
-        // while (!mediaReady)
-        // {
-        //     setTimeout(() => {}, 1000);
-        // }
+        while (!mediaReady)
+        {
+            setTimeout(() => {}, 1000);
+        }
         
         playMedia(element);
     });
@@ -298,3 +355,8 @@ function configureVideoElement(videoElement, mediaUrl) {
 }
 
 //#endregion
+})();
+
+/******/ })()
+;
+//# sourceMappingURL=main.5721f90beac4d6990be8.js.map
