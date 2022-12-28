@@ -7,12 +7,14 @@ const constants = require('./constants');
 const defaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
 const defaultMaxMillis = constants.DefaultMaxMinutes * 60 * 1000;
 
+// Div containing the media to display
+const mediaDiv = document.getElementById("media-div");
+
 // Global variables
 let lastCorner;
 let tagName;
 let element;
 let config;
-let mediaReady = false;
 
 // Get config settings
 getStreamerWormConfig()
@@ -23,15 +25,7 @@ getStreamerWormConfig()
     })
     .then(() => {
         // Create and append media element to media div
-        const mediaDiv = document.getElementById("media-div");
         mediaDiv.appendChild(element);
-    
-        // Initialize media loop if there was no issue fetching the media file
-        // while (!mediaReady)
-        // {
-        //     setTimeout(() => {}, 1000);
-        // }
-        
         playMedia(element);
     });
 
@@ -55,11 +49,11 @@ function playMedia(element) {
             element.play();
         }
         // Make media visible
-        element.style.visibility = 'visible';
+        mediaDiv.style.visibility = 'visible';
         
         // Hide image/video after it plays for the desired duration, and requeue the media timer
         setTimeout(() => {
-            element.style.visibility = 'hidden';
+            mediaDiv.style.visibility = 'hidden';
             setPosition(element);
             playMedia(element);
         }, config.mediaDuration);
@@ -119,7 +113,6 @@ async function getStreamerWormConfig() {
         get: (searchParams, prop) => searchParams.get(prop || ''),
     });
 
-    // todo: (param) Image display coordinates (where on the screen should it show up)
     let skipDelay = parseBool(urlParams.skipDelay);
     let maxDelayMillis = getDelayMillis(skipDelay, urlParams.max, defaultMaxMillis);
     let minDelayMillis = getDelayMillis(skipDelay, urlParams.min, defaultMinMillis);
@@ -127,7 +120,7 @@ async function getStreamerWormConfig() {
     let maxWidth = isValidNumericValue(urlParams.maxWidth) ? urlParams.maxWidth : constants.DefaultMaxWidth;
     let mediaUrl = urlParams.mediaUrl ? urlParams.mediaUrl : constants.DefaultMediaPath;
     
-    let mediaDuration = getMediaDuration(mediaUrl);
+    let mediaDuration = await getMediaDuration(mediaUrl);
     
     // let shouldRandomize = parseBool(urlParams.randomize);
     // let slideshow = parseBool(urlParams.slideshow);
@@ -179,20 +172,19 @@ function parseBool(boolString) {
     return boolString === 'true';
 }
 
-// todo: Understand why this works
 // Fancy method to get Media length
 async function getMediaDuration(mediaUrl) {
-    fetch(mediaUrl, { mode: 'cors' })
-        .catch(err => {
-            console.log(err);
+    return await fetch(mediaUrl, { mode: 'cors' })
+        .then(res => {
+            if (res.ok)
+                return Promise.resolve(res);
+            return Promise.reject(res);
         })
-        .then(res =>
-            res.arrayBuffer()
-        )
-        .then(ab =>
-            getGifDuration(new Uint8Array(ab))
-        );
-        // mediaErrorReason = 'Error getting media length with reason: [' + reason + ']. Media will not play';
+        .then(res => res.arrayBuffer())
+        .then(ab => getGifDuration(new Uint8Array(ab)))
+        .catch(err => {
+            throw new Error(constants.FetchImageError.replace('{0}', mediaUrl).replace('{1}', `${err.status} - ${err.statusText}`));
+        });
 
     /** @param {Uint8Array} uint8 */
     function getGifDuration (uint8) {
@@ -210,10 +202,6 @@ async function getMediaDuration(mediaUrl) {
         // Convert to milliseconds
         return duration * 10
     }
-}
-
-function promiseFailure(error) {
-    console.log(error);
 }
 
 //#endregion
@@ -234,7 +222,7 @@ function prepareElement(tagName, config) {
     
     switch (tagName) {
         case 'img':
-            return configureImageElement(mediaElement);
+            return mediaElement;
         case 'video':
             return configureVideoElement(mediaElement, config.mediaUrl);
         default:
@@ -275,12 +263,6 @@ function getTagNameFromFile(fileName) {
 // Get extension from file path
 function getFileExtension(fileName) {
     return fileName.slice((Math.max(0, fileName.lastIndexOf(".")) || Infinity) + 1);
-}
-
-// Set Image properties
-function configureImageElement(image) {
-    // todo: Configure image
-    return image;
 }
 
 // Set Video properties
