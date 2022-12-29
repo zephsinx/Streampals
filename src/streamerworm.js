@@ -119,19 +119,19 @@ async function getStreamerWormConfig() {
     let maxHeight = isValidNumericValue(urlParams.maxHeight) ? urlParams.maxHeight : constants.DefaultMaxHeight;
     let maxWidth = isValidNumericValue(urlParams.maxWidth) ? urlParams.maxWidth : constants.DefaultMaxWidth;
     let mediaUrl = urlParams.mediaUrl ? urlParams.mediaUrl : constants.DefaultMediaPath;
-    
-    let mediaDuration = await getMediaDuration(mediaUrl);
+    let mediaDuration = isValidNumericValue(urlParams.mediaDuration) ? urlParams.mediaDuration : await getMediaDuration(mediaUrl);
     
     // let shouldRandomize = parseBool(urlParams.randomize);
     // let slideshow = parseBool(urlParams.slideshow);
     
     let config = {
+        skipDelay: skipDelay,
         maxDelay: maxDelayMillis,            // The maximum delay between media plays (ignored if skipDelay is true)
         minDelay: minDelayMillis,            // The minimum delay between media plays (ignored if skipDelay is true)
         maxHeight: maxHeight,                // The maximum height the media should take up. Image will be resized to fit if larger
         maxWidth: maxWidth,                  // The maximum width the media should take up. Image will be resized to fit if larger
         mediaUrl: mediaUrl,                  // The URL or path of the media to display
-        mediaDuration: mediaDuration,        // The duration of the media to display, used for knowing how long to display it for
+        mediaDuration: mediaDuration,        // The duration of the media to display, used for knowing how long to display it for. In milliseconds.
         // shouldRandomize: shouldRandomize, // If the displayed media should be randomized from the media list (ignored if slideshow is false)
         // slideshow: slideshow,             // If the displayed media should change on each loop
     };
@@ -148,8 +148,9 @@ function validateConfig(config) {
         config.minDelayMillis = defaultMinMillis;
     }
     
-    if (config.mediaDuration < 100)
-        config.mediaDuration = 100;
+    if (config.mediaDuration === 0) {
+        throw new Error(constants.ZeroMediaDurationWarning);
+    }
     
     return config;
 }
