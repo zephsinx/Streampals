@@ -119,7 +119,7 @@ async function getStreamerWormConfig() {
     let maxHeight = isValidNumericValue(urlParams.maxHeight) ? urlParams.maxHeight : constants.DefaultMaxHeight;
     let maxWidth = isValidNumericValue(urlParams.maxWidth) ? urlParams.maxWidth : constants.DefaultMaxWidth;
     let mediaUrl = urlParams.mediaUrl ? urlParams.mediaUrl : constants.DefaultMediaPath;
-    let mediaDuration = isValidNumericValue(urlParams.mediaDuration) ? urlParams.mediaDuration : await getMediaDuration(mediaUrl);
+    let mediaDuration = isValidNumericValue(urlParams.mediaDuration) ? (urlParams.mediaDuration * 1000) : await getMediaDuration(mediaUrl);
     
     // let shouldRandomize = parseBool(urlParams.randomize);
     // let slideshow = parseBool(urlParams.slideshow);
