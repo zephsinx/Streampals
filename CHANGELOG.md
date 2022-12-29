@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
+## [0.5.0] - 2022-12-29
+
+### Added
+
+- Add `mediaDuration` query parameter to override media duration calculation.
+  - Helpful for times when the built-in media calculation does not work.
+- App throws error when media duration is `0`. Can be overridden by passing `mediaDuration`.
+
+### Changed
+
+- Change Dockerfile to use `node:18` image.
+
+### Remove
+
+- Remove 100ms default when calculated or provided `mediaDuration` is `0`.
+
 ## [0.4.0] - 2022-12-28
 
 ### Added

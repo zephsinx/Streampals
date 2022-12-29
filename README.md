@@ -59,7 +59,7 @@ docker run -it -d -p 3123:3000 zephsinx/streamerworm:latest
 ### Browser Source configuration
 
 1. Add a new Browser Source to your broadcasting software (e.g. [OBS](https://obsproject.com/kb/browser-source)).
-2. In the URL field, enter `https://www.[URL-TBD].com`.
+2. In the URL field, enter `https://streamerworm.zephsinx.com`.
    1. If running locally, use `http://localhost:3000`
 3. Enjoy!
 
@@ -69,18 +69,20 @@ The default behavior of StreamerWorm can be modified by adding query parameters 
 
 Example:
 ```http request
-https://www.URL-TBD.com?skipDelay=true&maxWidth=30&maxHeight=45
+https://streamerworm.zephsinx.com?skipDelay=true&maxWidth=30&maxHeight=45
 ```
 
 #### Available Parameters
 
-| Parameter   | Type    | Default | Description                                                                                               |
-|-------------|---------|---------|-----------------------------------------------------------------------------------------------------------|
-| `skipDelay` | `bool`  | `false` | Whether to skip the delay between media plays                                                             |
-| `min`       | `float` | `30`    | The minimum amount time to wait between media plays in minutes                                            |
-| `max`       | `float` | `90`    | The maximum amount of time to wait between media plays in minutes                                         |
-| `maxHeight` | `float` | `25`    | The maximum height of the media being displayed on screen. Value is a percentage of the total screen size |
-| `maxWidth`  | `float` | `25`    | The minimum height of the media being displayed on screen. Value is a percentage of the total screen size |
+| Parameter       | Type    | Default             | Description                                                                                                                                                                   |
+|-----------------|---------|---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `skipDelay`     | `bool`  | `false`             | Whether to skip the delay between media plays                                                                                                                                 |
+| `min`           | `float` | `30`                | The minimum amount time to wait between media plays in minutes                                                                                                                |
+| `max`           | `float` | `90`                | The maximum amount of time to wait between media plays in minutes                                                                                                             |
+| `maxHeight`     | `float` | `25`                | The maximum height of the media being displayed on screen. Value is a percentage of the total screen size                                                                     |
+| `maxWidth`      | `float` | `25`                | The minimum height of the media being displayed on screen. Value is a percentage of the total screen size                                                                     |
+| `mediaUrl`      | `float` | `default-media.gif` | Override URL of media to display. Used to provide a custom image or video to play                                                                                             |
+| `mediaDuration` | `float` | None (calculated)   | Duration of media in seconds (decimals are accepted). StreamerWorm attempts to calculate the media duration, but in the case the calculation fails it should be provided here |
 
 ## Versioning
 
