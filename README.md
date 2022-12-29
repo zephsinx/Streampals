@@ -68,8 +68,15 @@ docker run -it -d -p 3123:3000 zephsinx/streamerworm:latest
 The default behavior of StreamerWorm can be modified by adding query parameters to the StreamerWorm URL. Hosted URL coming soon.
 
 Example:
-```http request
+```
 https://streamerworm.zephsinx.com?skipDelay=true&maxWidth=30&maxHeight=45
+```
+
+The displayed media can be overriden using the `mediaUrl` parameter. Keep in mind, while StreamerWorm attempts to calculate the media duration, you may need to manually specify the display time (in seconds) via the `mediaDuration` parameter.
+
+For example:
+```
+https://streamerworm.zephsinx.com?mediaUrl=https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif&mediaDuration=2.75
 ```
 
 #### Available Parameters
