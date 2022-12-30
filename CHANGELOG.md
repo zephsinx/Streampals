@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
+## [0.5.1] - 2022-12-29
+
+### Added
+
+- Now able to change default file name from [.env](.env) file.
+
 ## [0.5.0] - 2022-12-29
 
 ### Added

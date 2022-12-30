@@ -1,11 +1,12 @@
 {
   "name": "@zephsinx/streamerworm",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A silly lil' silly worm for your streams.",
   "main": "index.js",
   "scripts": {
     "build": "npx webpack --mode production",
-    "start": "node index.js"
+    "build:dev": "npx webpack --mode development",
+    "dev": "npx webpack --mode development && node index.js"
   },
   "keywords": [
     "streamerworm",
@@ -13,11 +14,22 @@
     "youtube",
     "stream"
   ],
-  "author": { "name": "zephsinx", "email": "zephsinx@gmail.com", "url": "https://github.com/zephsinx)" },
-  "contributors": [{ "name": "Dudlik", "url": "https://dudlik.co" }],
+  "author": {
+    "name": "zephsinx",
+    "email": "zephsinx@gmail.com",
+    "url": "https://github.com/zephsinx"
+  },
+  "contributors": [
+    {
+      "name": "Dudlik",
+      "url": "https://dudlik.co"
+    }
+  ],
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2"
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "replace-in-file": "^6.3.5"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^4.0.0",

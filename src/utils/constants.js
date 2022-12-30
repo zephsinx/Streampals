@@ -5,8 +5,6 @@ exports.DefaultMaxMinutes = 90;
 exports.DefaultMaxHeight = "25"; // Percentage value
 exports.DefaultMaxWidth = "25"; // Percentage value
 
-exports.DefaultMediaPath = "default-media.gif";
-
 // Warning messages
 exports.ZeroMediaDurationWarning = "Unable to calculate media duration for the requested media. Please set the media duration (in seconds) via the `mediaDuration` parameter. Parameter supports decimal values.";
 

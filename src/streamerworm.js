@@ -1,7 +1,7 @@
 "use strict";
 
 // Constants
-const constants = require('./constants');
+const constants = require('./utils/constants');
 
 // Global defaults
 const defaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
@@ -113,12 +113,14 @@ async function getStreamerWormConfig() {
         get: (searchParams, prop) => searchParams.get(prop || ''),
     });
 
+    let defaultMediaUrl = document.getElementById('media-url').innerHTML;
+
     let skipDelay = parseBool(urlParams.skipDelay);
     let maxDelayMillis = getDelayMillis(skipDelay, urlParams.max, defaultMaxMillis);
     let minDelayMillis = getDelayMillis(skipDelay, urlParams.min, defaultMinMillis);
     let maxHeight = isValidNumericValue(urlParams.maxHeight) ? urlParams.maxHeight : constants.DefaultMaxHeight;
     let maxWidth = isValidNumericValue(urlParams.maxWidth) ? urlParams.maxWidth : constants.DefaultMaxWidth;
-    let mediaUrl = urlParams.mediaUrl ? urlParams.mediaUrl : constants.DefaultMediaPath;
+    let mediaUrl = urlParams.mediaUrl ? urlParams.mediaUrl : defaultMediaUrl;
     let mediaDuration = isValidNumericValue(urlParams.mediaDuration) ? (urlParams.mediaDuration * 1000) : await getMediaDuration(mediaUrl);
     
     // let shouldRandomize = parseBool(urlParams.randomize);
