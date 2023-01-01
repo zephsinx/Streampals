@@ -33,7 +33,7 @@ catch (error) {
 }
 
 // Set path where media is found
-const defaultMediaPath = process.env.DEFAULT_MEDIA_PATH || '/src/media';
+const defaultMediaPath = process.env.DEFAULT_MEDIA_PATH || '/src/streamerworm/media';
 
 app.use(express.static(__dirname + '/dist'));
 app.use(express.static('/media'), express.static(__dirname + defaultMediaPath));
