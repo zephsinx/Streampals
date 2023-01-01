@@ -478,3 +478,6 @@ $RECYCLE.BIN/
 
 # Rider files
 /.idea
+
+# Project files
+.env

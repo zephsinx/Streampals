@@ -1,7 +1,6 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const replace = require('replace-in-file');
 
 module.exports = {
     entry: './src/streamerworm.js',
@@ -15,7 +14,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: 'indexTemplate.html',
             title: 'StreamerWorm',
-            favicon: 'src/resources/favicon.ico',
+            favicon: 'src/streamerworm/resources/favicon.ico',
             lang: 'en',
             mediaUrl: '[[mediaUrl]]',
         }),

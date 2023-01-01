@@ -3,6 +3,7 @@
 const express = require('express');
 const path = require('path');
 const replace = require('replace-in-file');
+
 require('dotenv').config();
 
 const app = express();
@@ -11,9 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // [TechDebt]: Find a better way to insert the end variable
-// Replace [[mediaUrl]]
 const options = {
-
     //Single file
     files: 'dist/index.html',
 
@@ -33,7 +32,7 @@ catch (error) {
 }
 
 // Set path where media is found
-const defaultMediaPath = process.env.DEFAULT_MEDIA_PATH || '/src/media';
+const defaultMediaPath = process.env.DEFAULT_MEDIA_PATH || '/src/streamerworm/media';
 
 app.use(express.static(__dirname + '/dist'));
 app.use(express.static('/media'), express.static(__dirname + defaultMediaPath));

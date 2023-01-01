@@ -1,9 +1,9 @@
 "use strict";
 
-// Constants
 const constants = require('./utils/constants');
 
 // Global defaults
+
 const defaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
 const defaultMaxMillis = constants.DefaultMaxMinutes * 60 * 1000;
 
@@ -11,6 +11,7 @@ const defaultMaxMillis = constants.DefaultMaxMinutes * 60 * 1000;
 const mediaDiv = document.getElementById("media-div");
 
 // Global variables
+
 let lastCorner;
 let tagName;
 let element;
