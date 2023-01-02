@@ -1,4 +1,9 @@
+.git
+.idea
 node_modules
 npm-debug.log
-.idea
-.git
+src
+.gitignore
+Dockerfile
+.dockerignore
+webpack.config.js

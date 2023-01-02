@@ -2,43 +2,28 @@
 
 const express = require('express');
 const path = require('path');
-const replace = require('replace-in-file');
-
-require('dotenv').config();
-
-const app = express();
-
-// Set port number
-const PORT = process.env.PORT || 3000;
-
-// [TechDebt]: Find a better way to insert the end variable
-const options = {
-    //Single file
-    files: 'dist/index.html',
-
-    //Replacement to make (string or regex)
-    from: /id="media-url".*>(.*)<\/[a-z]*>/g,
-    to: match => {
-        let replaceString = match.replace(/id="media-url".*>(.*)<\/[a-z]*>/g, '$1');
-        return match.replace(replaceString, process.env.MEDIA_FILE_NAME);
-    },
-};
 
 try {
-    replace.sync(options);
+    require('dotenv').config();
 }
-catch (error) {
-    console.error('Error occurred:', error);
+catch {
+    // No-op
 }
 
-// Set path where media is found
-const defaultMediaPath = process.env.DEFAULT_MEDIA_PATH || '/src/streamerworm/media';
+const PORT = process.env.PORT || 3000;
+const MEDIA_FILE = process.env.MEDIA_FILE || '/dist/media/worms.gif';
 
-app.use(express.static(__dirname + '/dist'));
-app.use(express.static('/media'), express.static(__dirname + defaultMediaPath));
+const app = express();
+app.set('view engine', 'pug')
+
+app.use('/js', express.static(__dirname + '/dist/js'));
+app.use('/media', express.static(__dirname + MEDIA_FILE));
+app.use('/favicon.ico', express.static(__dirname + '/dist/favicon.ico'));
 
 app.get('/', function (req, res) {
-    res.sendFile(path.join(__dirname, '/dist/index.html'));
+    res.render(path.join(__dirname, '/dist/index'), function (err, html) {
+        res.send(html);
+    });
 });
 
 // Server setup
