@@ -2,6 +2,7 @@
 
 const express = require('express');
 const path = require('path');
+const pug = require('pug');
 
 try {
     require('dotenv').config();
