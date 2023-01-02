@@ -124,9 +124,6 @@ async function getStreamerWormConfig() {
     let mediaInfo = await fetchMediaInfo(mediaUrl);
     let mediaDuration = isValidNumericValue(urlParams.mediaDuration) ? (urlParams.mediaDuration * 1000) : mediaInfo.duration || 0;
 
-    // let shouldRandomize = parseBool(urlParams.randomize);
-    // let slideshow = parseBool(urlParams.slideshow);
-
     let config = {
         skipDelay: skipDelay,
         maxDelay: maxDelayMillis,            // The maximum delay between media plays (ignored if skipDelay is true)
@@ -136,8 +133,6 @@ async function getStreamerWormConfig() {
         mediaUrl: mediaUrl,                  // The URL or path of the media to display
         mediaDuration: mediaDuration,        // The duration of the media to display, used for knowing how long to display it for. In milliseconds
         contentType: mediaInfo.contentType,  // Content type of the downloaded media
-        // shouldRandomize: shouldRandomize, // If the displayed media should be randomized from the media list (ignored if slideshow is false)
-        // slideshow: slideshow,             // If the displayed media should change on each loop
     };
     
     return validateConfig(config);
@@ -274,7 +269,6 @@ function configureVideoElement(videoElement, config) {
 
     // Note: autoplay only works in Chrome after a user has interacted with the DOM unless the muted tag is used
     videoElement.autoplay = true;
-    // videoElement.muted = 'muted'; // Needed to autoplay in Chrome browser after Chrome 66
     videoElement.appendChild(videoSource);
 
     return videoElement;
