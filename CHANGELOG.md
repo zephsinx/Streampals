@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
+## [Unreleased]
+
+### Changed
+
+- Media tag now determined from media `Content-Type` header, rather than file extension.
+- Updated [some dependencies](package.json).
+
+### Removed
+
+- Removed `.env` file.
+- [Unnecessary files](.dockerignore) from docker image.
+
 ## [0.5.1] - 2022-12-29
 
 ### Added
@@ -25,7 +37,7 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
 - Change Dockerfile to use `node:18` image.
 
-### Remove
+### Removed
 
 - Remove 100ms default when calculated or provided `mediaDuration` is `0`.
 

@@ -6,6 +6,7 @@ const constants = require('./utils/constants');
 
 const defaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
 const defaultMaxMillis = constants.DefaultMaxMinutes * 60 * 1000;
+const defaultMediaUrl = '/media';
 
 // Div containing the media to display
 const mediaDiv = document.getElementById("media-div");
@@ -21,7 +22,7 @@ let config;
 getStreamerWormConfig()
     .then(configVal => {
         config = configVal;
-        tagName = getTagNameFromFile(config.mediaUrl);
+        tagName = getTagNameFromFile(config.contentType);
         element = prepareElement(tagName, config);
     })
     .then(() => {
@@ -114,19 +115,18 @@ async function getStreamerWormConfig() {
         get: (searchParams, prop) => searchParams.get(prop || ''),
     });
 
-    let defaultMediaUrl = document.getElementById('media-url').innerHTML;
-
     let skipDelay = parseBool(urlParams.skipDelay);
     let maxDelayMillis = getDelayMillis(skipDelay, urlParams.max, defaultMaxMillis);
     let minDelayMillis = getDelayMillis(skipDelay, urlParams.min, defaultMinMillis);
     let maxHeight = isValidNumericValue(urlParams.maxHeight) ? urlParams.maxHeight : constants.DefaultMaxHeight;
     let maxWidth = isValidNumericValue(urlParams.maxWidth) ? urlParams.maxWidth : constants.DefaultMaxWidth;
     let mediaUrl = urlParams.mediaUrl ? urlParams.mediaUrl : defaultMediaUrl;
-    let mediaDuration = isValidNumericValue(urlParams.mediaDuration) ? (urlParams.mediaDuration * 1000) : await getMediaDuration(mediaUrl);
-    
+    let mediaInfo = await fetchMediaInfo(mediaUrl);
+    let mediaDuration = isValidNumericValue(urlParams.mediaDuration) ? (urlParams.mediaDuration * 1000) : mediaInfo.duration || 0;
+
     // let shouldRandomize = parseBool(urlParams.randomize);
     // let slideshow = parseBool(urlParams.slideshow);
-    
+
     let config = {
         skipDelay: skipDelay,
         maxDelay: maxDelayMillis,            // The maximum delay between media plays (ignored if skipDelay is true)
@@ -134,7 +134,8 @@ async function getStreamerWormConfig() {
         maxHeight: maxHeight,                // The maximum height the media should take up. Image will be resized to fit if larger
         maxWidth: maxWidth,                  // The maximum width the media should take up. Image will be resized to fit if larger
         mediaUrl: mediaUrl,                  // The URL or path of the media to display
-        mediaDuration: mediaDuration,        // The duration of the media to display, used for knowing how long to display it for. In milliseconds.
+        mediaDuration: mediaDuration,        // The duration of the media to display, used for knowing how long to display it for. In milliseconds
+        contentType: mediaInfo.contentType,  // Content type of the downloaded media
         // shouldRandomize: shouldRandomize, // If the displayed media should be randomized from the media list (ignored if slideshow is false)
         // slideshow: slideshow,             // If the displayed media should change on each loop
     };
@@ -150,11 +151,11 @@ function validateConfig(config) {
         config.maxDelayMillis = defaultMaxMillis;
         config.minDelayMillis = defaultMinMillis;
     }
-    
+
     if (config.mediaDuration === 0) {
         throw new Error(constants.ZeroMediaDurationWarning);
     }
-    
+
     return config;
 }
 
@@ -176,36 +177,43 @@ function parseBool(boolString) {
     return boolString === 'true';
 }
 
-// Fancy method to get Media length
-async function getMediaDuration(mediaUrl) {
-    return await fetch(mediaUrl, { mode: 'cors' })
+// Fetch media file
+async function fetchMediaInfo(mediaUrl) {
+    let contentType;
+    let duration = await fetch(mediaUrl, { mode: 'cors' })
         .then(res => {
-            if (res.ok)
-                return Promise.resolve(res);
+            if (res.ok) {
+                {
+                    contentType = res.headers.get("Content-Type");
+                    return Promise.resolve(res);
+                }
+            }
             return Promise.reject(res);
         })
         .then(res => res.arrayBuffer())
-        .then(ab => getGifDuration(new Uint8Array(ab)))
+        .then(ab => getMediaDuration(new Uint8Array(ab)))
         .catch(err => {
             throw new Error(constants.FetchImageError.replace('{0}', mediaUrl).replace('{1}', `${err.status} - ${err.statusText}`));
         });
 
-    /** @param {Uint8Array} uint8 */
-    function getGifDuration (uint8) {
-        let duration = 0
-        for (let i = 0, len = uint8.length; i < len; i++) {
-            if (uint8[i] === 0x21
-                && uint8[i + 1] === 0xF9
-                && uint8[i + 2] === 0x04
-                && uint8[i + 7] === 0x00)
-            {
-                const delay = (uint8[i + 5] << 8) | (uint8[i + 4] & 0xFF)
-                duration += delay < 2 ? 10 : delay
-            }
+    return {contentType: contentType, duration: duration};
+}
+
+// Fancy method to get Media length
+function getMediaDuration(uint8) {
+    let duration = 0;
+    for (let i = 0, len = uint8.length; i < len; i++) {
+        if (uint8[i] === 0x21
+            && uint8[i + 1] === 0xF9
+            && uint8[i + 2] === 0x04
+            && uint8[i + 7] === 0x00)
+        {
+            const delay = (uint8[i + 5] << 8) | (uint8[i + 4] & 0xFF)
+            duration += delay < 2 ? 10 : delay
         }
-        // Convert to milliseconds
-        return duration * 10
     }
+    // Convert to milliseconds
+    return duration * 10
 }
 
 //#endregion
@@ -228,52 +236,41 @@ function prepareElement(tagName, config) {
         case 'img':
             return mediaElement;
         case 'video':
-            return configureVideoElement(mediaElement, config.mediaUrl);
+            return configureVideoElement(mediaElement, config);
         default:
-            throw 'Tag name ' + tagName + ' not recognized';
+            throw new Error(`Tag name ${tagName} not recognized`);
     }
 }
 
 // Get the appropriate element tag name from the media file extension
-function getTagNameFromFile(fileName) {
-    let fileExtension = getFileExtension(fileName)
-
-    switch (fileExtension) {
-        case 'apng':
-        case 'avif':
-        case 'gif':
-        case 'jpg':
-        case 'jpeg':
-        case 'jpe':
-        case 'jif':
-        case 'png':
-        case 'svg':
-        case 'jfif':
-        case 'webp':
+function getTagNameFromFile(contentType) {
+    switch (contentType) {
+        case 'image/avif':
+        case 'image/gif':
+        case 'image/jpeg':
+        case 'image/png':
+        case 'image/svg+xml':
+        case 'image/webp':
+        case contentType.startsWith('image/'):
             return 'img';
-        case 'webm':
+        case 'video/webm':
+        case contentType.startsWith('video/'):
             return 'video';
         default: {
-            if (!fileExtension)
-                console.warn(constants.ExtensionNotFoundError);
+            if (!contentType)
+                console.warn(constants.ContentTypeNotFoundError);
             else
-                console.warn(constants.ExtensionNotSupportedError.replace('{0}', fileExtension));
+                console.warn(constants.ContentTypeNotSupportedError.replace('{0}', contentType));
         }
-        
         return 'img';
     }
 }
 
-// Get extension from file path
-function getFileExtension(fileName) {
-    return fileName.slice((Math.max(0, fileName.lastIndexOf(".")) || Infinity) + 1);
-}
-
 // Set Video properties
-function configureVideoElement(videoElement, mediaUrl) {
+function configureVideoElement(videoElement, config) {
     let videoSource = document.createElement('source');
-    videoSource.src = mediaUrl;
-    videoSource.type = 'video/webm';
+    videoSource.src = config.mediaUrl;
+    videoSource.type = config.contentType;
 
     // Note: autoplay only works in Chrome after a user has interacted with the DOM unless the muted tag is used
     videoElement.autoplay = true;
