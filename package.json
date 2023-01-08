@@ -1,6 +1,6 @@
 {
-  "name": "@zephsinx/streamerworm",
-  "version": "0.6.0",
+  "name": "@zephsinx/streamworms",
+  "version": "0.6.1",
   "description": "A silly lil' silly worm for your streams.",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "dev": "npx webpack --mode development && node index.js"
   },
   "keywords": [
-    "streamerworm",
+    "streamworms",
     "twitch",
     "youtube",
     "stream"
@@ -36,7 +36,6 @@
     "dotenv": "^16.0.3",
     "html-webpack-plugin": "^5.5.0",
     "html-webpack-pug-plugin": "^4.0.0",
-    "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1"
   }
 }
