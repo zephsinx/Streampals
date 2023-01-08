@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
+## [0.6.1] - 2023-01-07
+
+## Changed
+
+- Renamed StreamerWorm to StreamWorms.
+
 ## [0.6.0] - 2023-01-01
 
 ### Changed
