@@ -5,7 +5,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const HtmlWebpackPugPlugin = require('html-webpack-pug-plugin');
 
 module.exports = {
-    entry: './src/streamerworm/streamerworm.js',
+    entry: './src/streamworms/streamworms.js',
     mode: 'production',
     devtool: 'source-map',
     optimization: {
@@ -15,14 +15,14 @@ module.exports = {
         new CleanWebpackPlugin(),
         new CopyPlugin({
             patterns: [
-                { from: "./src/streamerworm/media", to: "./media" },
+                { from: "./src/streamworms/media", to: "./media" },
             ],
         }),
         new HtmlWebpackPlugin({
-            template: 'src/streamerworm/views/index.pug',
-            favicon: './src/streamerworm/resources/favicon.ico',
+            template: 'src/streamworms/views/index.pug',
+            favicon: './src/streamworms/resources/favicon.ico',
             filename: 'index.pug',
-            title: 'StreamerWorm',
+            title: 'StreamWorms',
             minify: false,
         }),
         new HtmlWebpackPugPlugin(),
