@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
+## [0.7.0] - 2023-01-13
+
+### Changed
+
+- Media now appears randomly around the screen instead of only in the four corners.
+
 ## [0.6.1] - 2023-01-07
 
 ## Changed
@@ -36,7 +42,7 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 ### Added
 
 - Add `mediaDuration` query parameter to override media duration calculation.
-  - Helpful for times when the built-in media calculation does not work.
+    - Helpful for times when the built-in media calculation does not work.
 - App throws error when media duration is `0`. Can be overridden by passing `mediaDuration`.
 
 ### Changed
@@ -51,7 +57,8 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
 ### Added
 
-- Default media set to `default-media.gif` in the `src/media` folder. Replacing this GIF will change the displayed GIF loaded by default.
+- Default media set to `default-media.gif` in the `src/media` folder. Replacing this GIF will change the displayed GIF
+  loaded by default.
 - Dockerfile for running in docker container.
 
 ### Changed
@@ -69,7 +76,7 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 ### Added
 
 - Max media dimensions can be set via the `maxHeight` and `maxWidth` query parameters.
-   - Media will be shrunk to fit the smallest of the two values.
+    - Media will be shrunk to fit the smallest of the two values.
 - LICENSE file added.
 
 ### Changed
