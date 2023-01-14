@@ -1,6 +1,7 @@
 "use strict";
 
 const constants = require('./utils/constants');
+const utils = require('./utils/utils');
 
 // Global defaults
 
@@ -13,7 +14,7 @@ const mediaDiv = document.getElementById("media-div");
 
 // Global variables
 
-let lastCorner;
+let lastQuadrant;
 let tagName;
 let element;
 let config;
@@ -28,6 +29,7 @@ getStreamWormsConfig()
     .then(() => {
         // Create and append media element to media div
         mediaDiv.appendChild(element);
+        setPosition(element);
         playMedia(element);
     });
 
@@ -36,8 +38,8 @@ getStreamWormsConfig()
 // Shows and plays media after a random delay, then hides the media after durationMillis expires
 function playMedia(element) {
     // Skip delay between media plays when config.skipDelay == true
-    let delay = randomIntFromInterval(config.minDelay, config.maxDelay);
-    
+    let delay = utils.RandomIntFromInterval(config.minDelay, config.maxDelay);
+
     // Display the image after the random delay expires
     setTimeout(() => {
         // Reset image source to replay in the case of a GIF
@@ -52,7 +54,7 @@ function playMedia(element) {
         }
         // Make media visible
         mediaDiv.style.visibility = 'visible';
-        
+
         // Hide image/video after it plays for the desired duration, and requeue the media timer
         setTimeout(() => {
             mediaDiv.style.visibility = 'hidden';
@@ -62,46 +64,12 @@ function playMedia(element) {
     }, delay);
 }
 
-// Returns a random integer between min and max (inclusive)
-function randomIntFromInterval(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min)
-}
-
 // Set position of media element on page
 function setPosition(element) {
-    let corner = randomIntFromInterval(0, 3);
-    while (lastCorner === corner) {
-        corner = randomIntFromInterval(0, 3);
-    }
-    lastCorner = corner;
-
-    element.style.top = '';
-    element.style.bottom = '';
-    element.style.left = '';
-    element.style.right = '';
-
-    switch (corner) {
-        // 0: top left
-        case 0:
-            element.style.top = '0px';
-            element.style.left = '0px';
-            break;
-        // 1: top right
-        case 1:
-            element.style.top = '0px';
-            element.style.right = '0px';
-            break;
-        // 2: bottom right
-        case 2:
-            element.style.bottom = '0px';
-            element.style.right = '0px';
-            break;
-        // 3: bottom left
-        case 3:
-            element.style.bottom = '0px';
-            element.style.left = '0px';
-            break;
-    }
+    let coordinates = utils.GetMediaCoordinateStyles(lastQuadrant, element.height, element.width);
+    lastQuadrant = coordinates.quadrant;
+    element.style.left = coordinates.left;
+    element.style.top = coordinates.top;
 }
 
 //#endregion
@@ -134,15 +102,14 @@ async function getStreamWormsConfig() {
         mediaDuration: mediaDuration,        // The duration of the media to display, used for knowing how long to display it for. In milliseconds
         contentType: mediaInfo.contentType,  // Content type of the downloaded media
     };
-    
+
     return validateConfig(config);
 }
 
 // Validate and update config if invalid.
 function validateConfig(config) {
     // minDelayMillis must be less than or equal to maxDelayMillis, else use defaults
-    if (config.maxDelayMillis < config.minDelayMillis)
-    {
+    if (config.maxDelayMillis < config.minDelayMillis) {
         config.maxDelayMillis = defaultMaxMillis;
         config.minDelayMillis = defaultMinMillis;
     }
@@ -175,7 +142,7 @@ function parseBool(boolString) {
 // Fetch media file
 async function fetchMediaInfo(mediaUrl) {
     let contentType;
-    let duration = await fetch(mediaUrl, { mode: 'cors' })
+    let duration = await fetch(mediaUrl, {mode: 'cors'})
         .then(res => {
             if (res.ok) {
                 {
@@ -201,8 +168,7 @@ function getMediaDuration(uint8) {
         if (uint8[i] === 0x21
             && uint8[i + 1] === 0xF9
             && uint8[i + 2] === 0x04
-            && uint8[i + 7] === 0x00)
-        {
+            && uint8[i + 7] === 0x00) {
             const delay = (uint8[i + 5] << 8) | (uint8[i + 4] & 0xFF)
             duration += delay < 2 ? 10 : delay
         }
@@ -226,8 +192,6 @@ function prepareElement(tagName, config) {
     mediaElement.style.position = 'absolute';
     mediaElement.alt = 'Just a lil\' worm guy';
 
-    setPosition(mediaElement);
-    
     switch (tagName) {
         case 'img':
             return mediaElement;
@@ -258,7 +222,7 @@ function getTagNameFromFile(contentType) {
             else
                 console.warn(constants.ContentTypeNotSupportedError.replace('{0}', contentType));
         }
-        return 'img';
+            return 'img';
     }
 }
 

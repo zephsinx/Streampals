@@ -8,6 +8,10 @@ module.exports = {
     entry: './src/streamworms/streamworms.js',
     mode: 'production',
     devtool: 'source-map',
+    // watch: true,
+    // watchOptions: {
+    //     ignored: ['**/dist', '**/node_modules'],
+    // },
     optimization: {
         moduleIds: 'deterministic',
     },
