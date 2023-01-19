@@ -18,6 +18,7 @@ let lastQuadrant;
 let tagName;
 let element;
 let config;
+let first = true;
 
 // Get config settings
 getStreamWormsConfig()
@@ -29,7 +30,6 @@ getStreamWormsConfig()
     .then(() => {
         // Create and append media element to media div
         mediaDiv.appendChild(element);
-        setPosition(element);
         playMedia(element);
     });
 
@@ -37,9 +37,11 @@ getStreamWormsConfig()
 
 // Shows and plays media after a random delay, then hides the media after durationMillis expires
 function playMedia(element) {
-    // Skip delay between media plays when config.skipDelay == true
-    let delay = utils.RandomIntFromInterval(config.minDelay, config.maxDelay);
-
+    let delay = utils.randomIntFromInterval(config.minDelay, config.maxDelay);
+    if (first) {
+        delay = 0;
+        first = false;
+    }
     // Display the image after the random delay expires
     setTimeout(() => {
         // Reset image source to replay in the case of a GIF
@@ -66,7 +68,7 @@ function playMedia(element) {
 
 // Set position of media element on page
 function setPosition(element) {
-    let coordinates = utils.GetMediaCoordinateStyles(lastQuadrant, element.height, element.width);
+    let coordinates = utils.getMediaCoordinateStyles(lastQuadrant, element.height, element.width);
     lastQuadrant = coordinates.quadrant;
     element.style.left = coordinates.left;
     element.style.top = coordinates.top;
@@ -190,6 +192,8 @@ function prepareElement(tagName, config) {
     mediaElement.style.maxHeight = config.maxHeight + '%';
     mediaElement.style.maxWidth = config.maxWidth + '%';
     mediaElement.style.position = 'absolute';
+    mediaElement.style.top = '0';
+    mediaElement.style.left = '0';
     mediaElement.alt = 'Just a lil\' worm guy';
 
     switch (tagName) {

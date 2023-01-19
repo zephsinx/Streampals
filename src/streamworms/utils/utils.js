@@ -56,6 +56,6 @@ const randomIntFromInterval = function (min, max) {
 
 
 module.exports = {
-    GetMediaCoordinateStyles: getMediaCoordinateStyles,
-    RandomIntFromInterval: randomIntFromInterval,
+    getMediaCoordinateStyles: getMediaCoordinateStyles,
+    randomIntFromInterval: randomIntFromInterval,
 };

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
+## [0.7.1] - 2023-01-18
+
+### Changed
+
+- Show media once on the top left of the screen on page/source load to assist in ensuring application is working as
+  expected.
+
+### Fixed
+
+- Worms no longer show outside of screen bounds on their first appearance.
+
 ## [0.7.0] - 2023-01-13
 
 ### Changed
