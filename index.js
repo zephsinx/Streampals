@@ -23,6 +23,7 @@ app.use('/media', express.static(path.join(__dirname, MEDIA_FILE)));
 
 app.get('/', function (req, res) {
     res.locals.lang = process.env.LANG || 'en';
+    res.locals.title = process.env.TITLE || 'StreamWorms';
     res.render(path.join(__dirname, '/dist/index'), function (err, html) {
         res.send(html);
     });
