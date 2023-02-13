@@ -1,0 +1,9 @@
+﻿doctype html
+html(lang= pageData.lang)
+    head
+        meta(name="viewport" charset="UTF-8" content="width=device-width")
+        link(rel='icon', href='favicon.ico')
+        title= pageData.title
+    body
+        div#media-div(style='visibility:hidden')
+        script(src=require('/src/streamworms/js/streamworms.js') defer='defer')

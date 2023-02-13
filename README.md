@@ -36,7 +36,18 @@ Before you begin, ensure you have met the following requirements:
 
 ## Deployment
 
-Instructions on deploying to a server coming soon.
+### Deploy as website
+
+All the files you need to host StreamWorms are within the [dist](./dist) folder.
+
+Steps:
+
+1. Download the files, and place the files from the [dist](./dist) folder wherever you want to keep them.
+2. In your server hosting, point the desired path to the [streamworms.html](./dist/streamworms.html) file from
+   the `dist` folder.
+3. That should be all!
+
+### Docker
 
 StreamWorms is also available as a Docker image
 on [Docker Hub](https://hub.docker.com/repository/docker/zephsinx/streamworms).

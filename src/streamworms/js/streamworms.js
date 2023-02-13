@@ -7,7 +7,7 @@ const utils = require('./utils/utils');
 
 const defaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
 const defaultMaxMillis = constants.DefaultMaxMinutes * 60 * 1000;
-const defaultMediaUrl = '/media';
+const defaultMediaUrl = '/media/worms.gif';
 
 // Div containing the media to display
 const mediaDiv = document.getElementById("media-div");
@@ -90,7 +90,7 @@ async function getStreamWormsConfig() {
     let minDelayMillis = getDelayMillis(skipDelay, urlParams.min, defaultMinMillis);
     let maxHeight = isValidNumericValue(urlParams.maxHeight) ? urlParams.maxHeight : constants.DefaultMaxHeight;
     let maxWidth = isValidNumericValue(urlParams.maxWidth) ? urlParams.maxWidth : constants.DefaultMaxWidth;
-    let mediaUrl = urlParams.mediaUrl ? urlParams.mediaUrl : defaultMediaUrl;
+    let mediaUrl = await getMediaUrl(urlParams.mediaUrl);
     let mediaInfo = await fetchMediaInfo(mediaUrl);
     let mediaDuration = isValidNumericValue(urlParams.mediaDuration) ? (urlParams.mediaDuration * 1000) : mediaInfo.duration || 0;
 
@@ -106,6 +106,26 @@ async function getStreamWormsConfig() {
     };
 
     return validateConfig(config);
+}
+
+async function getMediaUrl(urlParamMediaUrl) {
+    if (urlParamMediaUrl) {
+        return urlParamMediaUrl;
+    }
+    
+    // Fetch media file
+    let mediaFile = await fetch('/js/resources/media.json', {mode: 'cors'})
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            }
+            return Promise.reject(res);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+    
+    return mediaFile.mediaPath || defaultMediaUrl;
 }
 
 // Validate and update config if invalid.

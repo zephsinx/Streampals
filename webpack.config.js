@@ -1,17 +1,14 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyPlugin = require("copy-webpack-plugin");
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const HtmlWebpackPugPlugin = require('html-webpack-pug-plugin');
+const PugPlugin = require('pug-plugin');
 
-module.exports = {
-    entry: './src/streamworms/streamworms.js',
-    mode: 'production',
+const config = {
+    entry: {
+        streamworms: './src/streamworms/views/streamworms.pug?pageData='
+            + JSON.stringify({ title: 'StreamWorms', lang: 'en' })
+    },
     devtool: 'source-map',
-    // watch: true,
-    // watchOptions: {
-    //     ignored: ['**/dist', '**/node_modules'],
-    // },
     optimization: {
         moduleIds: 'deterministic',
     },
@@ -20,19 +17,32 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 { from: "./src/streamworms/media", to: "./media" },
+                { from: "./src/streamworms/js/resources", to: "./js/resources" },
+                { from: "./src/streamworms/favicon.ico", to: "./" },
             ],
         }),
-        new HtmlWebpackPlugin({
-            template: 'src/streamworms/views/index.pug',
-            favicon: './src/streamworms/resources/favicon.ico',
-            filename: 'index.pug',
-            title: 'StreamWorms',
-            minify: false,
-        }),
-        new HtmlWebpackPugPlugin(),
+        // enable processing of Pug files defined in webpack entry
+        new PugPlugin({
+            js: {
+                // output filename of extracted JS file from source script defined in Pug
+                filename: 'js/[name].[contenthash:8].js'
+            },
+            favicon: {
+                filename: 'favicon.ico'
+            }
+        })
     ],
+    module: {
+        rules: [
+            {
+                test: /\.pug$/,
+                loader: PugPlugin.loader, // PugPlugin already contain the pug-loader
+            }
+        ],
+    },
     output: {
-        filename: 'js/[name].[contenthash:8].js',
         path: path.resolve(__dirname, 'dist'),
     },
 };
+
+module.exports = config;
