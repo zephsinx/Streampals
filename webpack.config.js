@@ -1,17 +1,19 @@
-const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const CopyPlugin = require("copy-webpack-plugin");
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const HtmlWebpackPugPlugin = require('html-webpack-pug-plugin');
+import path from "path";
+import url from "url";
+import {CleanWebpackPlugin} from "clean-webpack-plugin";
+import CopyPlugin from "copy-webpack-plugin";
+import PugPlugin from "pug-plugin";
+import pageData from "./src/streamworms/views/pageData.js";
 
-module.exports = {
-    entry: './src/streamworms/streamworms.js',
-    mode: 'production',
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const config = {
+    entry: {
+        index: './src/streamworms/views/streamworms.pug?pageData='
+            + JSON.stringify(pageData)
+    },
     devtool: 'source-map',
-    // watch: true,
-    // watchOptions: {
-    //     ignored: ['**/dist', '**/node_modules'],
-    // },
     optimization: {
         moduleIds: 'deterministic',
     },
@@ -19,20 +21,33 @@ module.exports = {
         new CleanWebpackPlugin(),
         new CopyPlugin({
             patterns: [
-                { from: "./src/streamworms/media", to: "./media" },
+                {from: "./src/streamworms/media", to: "./media"},
+                {from: "./src/streamworms/js/resources", to: "./js/resources"},
+                {from: "./src/streamworms/favicon.ico", to: "./"},
             ],
         }),
-        new HtmlWebpackPlugin({
-            template: 'src/streamworms/views/index.pug',
-            favicon: './src/streamworms/resources/favicon.ico',
-            filename: 'index.pug',
-            title: 'StreamWorms',
-            minify: false,
-        }),
-        new HtmlWebpackPugPlugin(),
+        // enable processing of Pug files defined in webpack entry
+        new PugPlugin({
+            js: {
+                // output filename of extracted JS file from source script defined in Pug
+                filename: 'js/[name].[contenthash:8].js'
+            },
+            favicon: {
+                filename: 'favicon.ico'
+            }
+        })
     ],
+    module: {
+        rules: [
+            {
+                test: /\.pug$/,
+                loader: PugPlugin.loader, // PugPlugin already contain the pug-loader
+            }
+        ],
+    },
     output: {
-        filename: 'js/[name].[contenthash:8].js',
         path: path.resolve(__dirname, 'dist'),
     },
 };
+
+export default config;

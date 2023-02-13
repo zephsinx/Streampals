@@ -1,12 +1,15 @@
 {
   "name": "@zephsinx/streamworms",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "A silly lil' silly worm for your streams.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
+    "dev": "webpack --mode development",
+    "devwatch": "webpack --watch --mode development",
+    "prod": "webpack --mode production",
     "build": "npx webpack --mode production",
-    "build:dev": "npx webpack --mode development",
-    "dev": "npx webpack --mode development && node index.js"
+    "build:dev": "npx webpack --mode development"
   },
   "keywords": [
     "streamworms",
@@ -27,15 +30,13 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "pug": "^3.0.2"
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "dotenv": "^16.0.3",
-    "html-webpack-plugin": "^5.5.0",
-    "html-webpack-pug-plugin": "^4.0.0",
+    "pug-plugin": "^4.9.4",
     "webpack-cli": "^5.0.1"
   }
 }

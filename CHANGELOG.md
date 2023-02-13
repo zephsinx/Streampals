@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
+## [0.8.0] - Unreleased
+
+### Changed
+
+- StreamWorms can now run in any environment, without the need of Node.js.
+  - i.e. `dist` folder is now self-contained, having everything needed to run the app.- Default media file is now pulled from [media.json](./dist/js/resources/media.json) file, which can be modified as
+  needed.
+- `dist` files no longer use Pug templates, opting for compiled HTML file.
+
 ## [0.7.1] - 2023-01-18
 
 ### Changed
@@ -46,7 +55,7 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
 ### Added
 
-- Now able to change default file name from [.env](.env) file.
+- Now able to change default file name from `.env` file.
 
 ## [0.5.0] - 2022-12-29
 
