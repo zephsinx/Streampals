@@ -1,8 +1,7 @@
 "use strict";
 
-const constants = require('./utils/constants');
-const utils = require('./utils/utils');
-
+import constants from "./utils/constants.js";
+import utils from "./utils/utils.js";
 // Global defaults
 
 const defaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;

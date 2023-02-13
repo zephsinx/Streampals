@@ -13,7 +13,7 @@ const ContentTypeNotFoundError = "Unable to determine content type of from media
 const ContentTypeNotSupportedError = "Content type not yet supported. Defaulting to `img` tag\". Content type found: `{0}`";
 const FetchImageError = "Error fetching image from URL '{0}'. Error status: '{1}'";
 
-module.exports = Object.freeze({
+export default Object.freeze({
     DefaultMinMinutes: DefaultMinMinutes,
     DefaultMaxMinutes: DefaultMaxMinutes,
     DefaultMaxHeight: DefaultMaxHeight,

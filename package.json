@@ -3,6 +3,7 @@
   "version": "0.8.0",
   "description": "A silly lil' silly worm for your streams.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "webpack --mode development",
     "devwatch": "webpack --watch --mode development",

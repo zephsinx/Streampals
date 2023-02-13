@@ -1,12 +1,17 @@
-const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const CopyPlugin = require("copy-webpack-plugin");
-const PugPlugin = require('pug-plugin');
+import path from "path";
+import url from "url";
+import {CleanWebpackPlugin} from "clean-webpack-plugin";
+import CopyPlugin from "copy-webpack-plugin";
+import PugPlugin from "pug-plugin";
+import pageData from "./src/streamworms/views/pageData.js";
+
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const config = {
     entry: {
-        streamworms: './src/streamworms/views/streamworms.pug?pageData='
-            + JSON.stringify({ title: 'StreamWorms', lang: 'en' })
+        index: './src/streamworms/views/streamworms.pug?pageData='
+            + JSON.stringify(pageData)
     },
     devtool: 'source-map',
     optimization: {
@@ -16,9 +21,9 @@ const config = {
         new CleanWebpackPlugin(),
         new CopyPlugin({
             patterns: [
-                { from: "./src/streamworms/media", to: "./media" },
-                { from: "./src/streamworms/js/resources", to: "./js/resources" },
-                { from: "./src/streamworms/favicon.ico", to: "./" },
+                {from: "./src/streamworms/media", to: "./media"},
+                {from: "./src/streamworms/js/resources", to: "./js/resources"},
+                {from: "./src/streamworms/favicon.ico", to: "./"},
             ],
         }),
         // enable processing of Pug files defined in webpack entry
@@ -45,4 +50,4 @@ const config = {
     },
 };
 
-module.exports = config;
+export default config;
