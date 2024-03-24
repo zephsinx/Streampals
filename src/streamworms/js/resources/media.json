@@ -1,3 +1,5 @@
 {
-  "mediaPath": "/media/worms.gif"
+  "mediaPaths": [
+    "/media/worms.gif"
+  ]
 }

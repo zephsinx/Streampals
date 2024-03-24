@@ -3,17 +3,16 @@
 import constants from "./utils/constants.js";
 import utils from "./utils/utils.js";
 // Global defaults
-
-const defaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
-const defaultMaxMillis = constants.DefaultMaxMinutes * 60 * 1000;
-const defaultMediaUrl = '/media/worms.gif';
+const DefaultMediaDurationMillis = constants.DefaultMediaDurationSeconds * 1000;
+const DefaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
+const DefaultMaxMillis = constants.DefaultMaxMinutes * 60 * 1000;
+const DefaultMediaUrl = '/media/worms.gif';
 
 // Div containing the media to display
 const mediaDiv = document.getElementById("media-div");
 
 // Global variables
 
-let lastQuadrant;
 let tagName;
 let element;
 let config;
@@ -60,11 +59,13 @@ function playMedia(element) {
         setTimeout(() => {
             mediaDiv.style.visibility = 'hidden';
             setPosition(element);
+            setMediaUrl(element, config);
             playMedia(element);
         }, config.mediaDuration);
     }, delay);
 }
 
+let lastQuadrant;
 // Set position of media element on page
 function setPosition(element) {
     let coordinates = utils.getMediaCoordinateStyles(lastQuadrant, element.height, element.width);
@@ -73,45 +74,95 @@ function setPosition(element) {
     element.style.top = coordinates.top;
 }
 
+// Check if we should randomize the media
+function setMediaUrl(element, config) {
+    if (config.randomImage) {
+        let randomIndex = Math.floor(Math.random() * config.mediaPaths.length);
+        element.src = config.mediaPaths[randomIndex];
+    }
+}
+
 //#endregion
 
 //#region StreamWorms configuration methods
 
-// Parse URL parameters from URL
+// Get StreamWorms config
 async function getStreamWormsConfig() {
-    // Get parameters from browser URL
-    let urlParams = new Proxy(new URLSearchParams(window.location.search), {
-        get: (searchParams, prop) => searchParams.get(prop || ''),
-    });
-
-    let skipDelay = parseBool(urlParams.skipDelay);
-    let maxDelayMillis = getDelayMillis(skipDelay, urlParams.max, defaultMaxMillis);
-    let minDelayMillis = getDelayMillis(skipDelay, urlParams.min, defaultMinMillis);
-    let maxHeight = isValidNumericValue(urlParams.maxHeight) ? urlParams.maxHeight : constants.DefaultMaxHeight;
-    let maxWidth = isValidNumericValue(urlParams.maxWidth) ? urlParams.maxWidth : constants.DefaultMaxWidth;
-    let mediaUrl = await getMediaUrl(urlParams.mediaUrl);
-    let mediaInfo = await fetchMediaInfo(mediaUrl);
-    let mediaDuration = isValidNumericValue(urlParams.mediaDuration) ? (urlParams.mediaDuration * 1000) : mediaInfo.duration || 0;
-
-    let config = {
-        skipDelay: skipDelay,
-        maxDelay: maxDelayMillis,            // The maximum delay between media plays (ignored if skipDelay is true)
-        minDelay: minDelayMillis,            // The minimum delay between media plays (ignored if skipDelay is true)
-        maxHeight: maxHeight,                // The maximum height the media should take up. Image will be resized to fit if larger
-        maxWidth: maxWidth,                  // The maximum width the media should take up. Image will be resized to fit if larger
-        mediaUrl: mediaUrl,                  // The URL or path of the media to display
-        mediaDuration: mediaDuration,        // The duration of the media to display, used for knowing how long to display it for. In milliseconds
-        contentType: mediaInfo.contentType,  // Content type of the downloaded media
-    };
-
+    let urlParams = getUrlParams();
+    let config = await createConfig(urlParams);
     return validateConfig(config);
 }
 
-async function getMediaUrl(urlParamMediaUrl) {
+function getUrlParams() {
+    return new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop || ''),
+    });
+}
+
+async function createConfig(urlParams) {
+    const skipDelay = urlParams.skipDelay === 'true';
+    const maxDelayMillis = getDelayMillis(skipDelay, urlParams.max, DefaultMaxMillis);
+    const minDelayMillis = getDelayMillis(skipDelay, urlParams.min, DefaultMinMillis);
+    const maxHeight = isValidNumericValue(urlParams.maxHeight) ? urlParams.maxHeight : constants.DefaultMaxHeight;
+    const maxWidth = isValidNumericValue(urlParams.maxWidth) ? urlParams.maxWidth : constants.DefaultMaxWidth;
+    let randomImage = (urlParams.randomImage === undefined || urlParams.randomImage === null) ? true : urlParams.randomImage === 'true';
+
+    console.log(`randomize = ${randomImage}`);
+
+    const mediaFile = await getMediaFile(urlParams.mediaUrl);
+    const mediaPaths = mediaFile.mediaPaths;
+
+    let mediaUrl;
+    if (randomImage && mediaPaths.length > 0) {
+        const randomIndex = Math.floor(Math.random() * mediaPaths.length);
+        mediaUrl = mediaPaths[randomIndex];
+    }
+
+    if (mediaPaths.length > 0) {
+        const randomIndex = Math.floor(Math.random() * mediaPaths.length);
+        mediaUrl = mediaPaths[randomIndex];
+    }
+
+    let mediaDuration = urlParams.mediaDuration;
+    // Get content type from file extension
+    let extension = mediaUrl.split('.').pop().split('?')[0];
+    let contentType = getContentTypeFromFileExtension(extension);
+
+    if (!isValidNumericValue(mediaDuration) || contentType === '') {
+        let mediaInfo;
+        try {
+            mediaInfo = await fetchMediaInfo(mediaUrl);
+            if (contentType === '') {
+                contentType = mediaInfo.contentType;
+            }
+            if (!isValidNumericValue(mediaDuration)) {
+                mediaDuration = mediaInfo.duration;
+            }
+        } catch (error) {
+            console.log(`Using default media duration of ${DefaultMediaDurationMillis} milliseconds`);
+            mediaDuration = DefaultMediaDurationMillis;
+        }
+    }
+
+    return {
+        skipDelay: skipDelay,
+        maxDelay: maxDelayMillis,
+        minDelay: minDelayMillis,
+        maxHeight: maxHeight,
+        maxWidth: maxWidth,
+        mediaUrl: mediaUrl,
+        mediaPaths: mediaPaths,
+        mediaDuration: mediaDuration,
+        contentType: contentType,
+        randomImage: randomImage,
+    };
+}
+
+async function getMediaFile(urlParamMediaUrl) {
     if (urlParamMediaUrl) {
         return urlParamMediaUrl;
     }
-    
+
     // Fetch media file
     let mediaFile = await fetch('/js/resources/media.json', {mode: 'cors'})
         .then(res => {
@@ -123,7 +174,27 @@ async function getMediaUrl(urlParamMediaUrl) {
         .catch((err) => {
             console.log(err);
         });
-    
+
+    return mediaFile || { mediaPath: DefaultMediaUrl, mediaPaths: [] };
+}
+
+async function getMediaUrl(urlParamMediaUrl) {
+    if (urlParamMediaUrl) {
+        return urlParamMediaUrl;
+    }
+
+    // Fetch media file
+    let mediaFile = await fetch('/js/resources/media.json', {mode: 'cors'})
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            }
+            return Promise.reject(res);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+
     return mediaFile.mediaPath || defaultMediaUrl;
 }
 
@@ -131,8 +202,8 @@ async function getMediaUrl(urlParamMediaUrl) {
 function validateConfig(config) {
     // minDelayMillis must be less than or equal to maxDelayMillis, else use defaults
     if (config.maxDelayMillis < config.minDelayMillis) {
-        config.maxDelayMillis = defaultMaxMillis;
-        config.minDelayMillis = defaultMinMillis;
+        config.maxDelayMillis = DefaultMaxMillis;
+        config.minDelayMillis = DefaultMinMillis;
     }
 
     if (config.mediaDuration === 0) {
@@ -153,11 +224,6 @@ function getDelayMillis(skipDelay, delayMinutes, defaultDelay) {
 // Check that provided string is a valid number and positive
 function isValidNumericValue(numberString) {
     return !isNaN(numberString) && !isNaN(parseFloat(numberString)) && parseFloat(numberString) > 0;
-}
-
-// Returns the value of a string as a boolean. Defaults to "false" if not a valid boolean
-function parseBool(boolString) {
-    return boolString === 'true';
 }
 
 // Fetch media file
@@ -185,17 +251,16 @@ async function fetchMediaInfo(mediaUrl) {
 // Fancy method to get Media length
 function getMediaDuration(uint8) {
     let duration = 0;
-    for (let i = 0, len = uint8.length; i < len; i++) {
+    for (let i = 0; i < uint8.length; i++) {
         if (uint8[i] === 0x21
             && uint8[i + 1] === 0xF9
             && uint8[i + 2] === 0x04
             && uint8[i + 7] === 0x00) {
-            const delay = (uint8[i + 5] << 8) | (uint8[i + 4] & 0xFF)
-            duration += delay < 2 ? 10 : delay
+            const delay = (uint8[i + 5] << 8) | uint8[i + 4];
+            duration += delay < 2 ? 10 : delay;
         }
     }
-    // Convert to milliseconds
-    return duration * 10
+    return duration * 10;
 }
 
 //#endregion
@@ -213,7 +278,7 @@ function prepareElement(tagName, config) {
     mediaElement.style.position = 'absolute';
     mediaElement.style.top = '0';
     mediaElement.style.left = '0';
-    mediaElement.alt = 'Just a lil\' worm guy';
+    mediaElement.alt = 'Just a lil\' stream pal';
 
     switch (tagName) {
         case 'img':
@@ -222,6 +287,29 @@ function prepareElement(tagName, config) {
             return configureVideoElement(mediaElement, config);
         default:
             throw new Error(`Tag name ${tagName} not recognized`);
+    }
+}
+
+// Map file extension to content type
+function getContentTypeFromFileExtension(fileExtension) {
+    switch (fileExtension) {
+        case 'avif':
+            return 'image/avif';
+        case 'gif':
+            return 'image/gif';
+        case 'jpeg':
+        case 'jpg':
+            return 'image/jpeg';
+        case 'png':
+            return 'image/png';
+        case 'svg':
+            return 'image/svg+xml';
+        case 'webp':
+            return 'image/webp';
+        case 'webm':
+            return 'video/webm';
+        default:
+            return '';
     }
 }
 
