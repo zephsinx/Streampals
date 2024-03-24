@@ -2,7 +2,6 @@
 
 import constants from "./utils/constants.js";
 import utils from "./utils/utils.js";
-
 // Global defaults
 const DefaultMediaDurationMillis = constants.DefaultMediaDurationSeconds * 1000;
 const DefaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
@@ -163,7 +162,7 @@ async function getMediaFile(urlParamMediaUrl) {
     if (urlParamMediaUrl) {
         return urlParamMediaUrl;
     }
-    
+
     // Fetch media file
     let mediaFile = await fetch('/js/resources/media.json', {mode: 'cors'})
         .then(res => {
@@ -175,8 +174,28 @@ async function getMediaFile(urlParamMediaUrl) {
         .catch((err) => {
             console.log(err);
         });
-    
+
     return mediaFile || { mediaPath: DefaultMediaUrl, mediaPaths: [] };
+}
+
+async function getMediaUrl(urlParamMediaUrl) {
+    if (urlParamMediaUrl) {
+        return urlParamMediaUrl;
+    }
+
+    // Fetch media file
+    let mediaFile = await fetch('/js/resources/media.json', {mode: 'cors'})
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            }
+            return Promise.reject(res);
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+
+    return mediaFile.mediaPath || defaultMediaUrl;
 }
 
 // Validate and update config if invalid.
