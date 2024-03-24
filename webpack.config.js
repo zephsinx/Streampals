@@ -3,14 +3,14 @@ import url from "url";
 import {CleanWebpackPlugin} from "clean-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import PugPlugin from "pug-plugin";
-import pageData from "./src/streamworms/views/pageData.js";
+import pageData from "./src/streampals/views/pageData.js";
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const config = {
     entry: {
-        index: './src/streamworms/views/streamworms.pug?pageData=' + JSON.stringify(pageData)
+        index: './src/streampals/views/streampals.pug?pageData=' + JSON.stringify(pageData)
     },
     devtool: 'source-map',
     optimization: {
@@ -20,9 +20,9 @@ const config = {
         new CleanWebpackPlugin(),
         new CopyPlugin({
             patterns: [
-                {from: "./src/streamworms/media", to: "./media"},
-                {from: "./src/streamworms/js/resources", to: "./js/resources"},
-                {from: "./src/streamworms/favicon.ico", to: "./"},
+                {from: "./src/streampals/media", to: "./media"},
+                {from: "./src/streampals/js/resources", to: "./js/resources"},
+                {from: "./src/streampals/favicon.ico", to: "./"},
             ],
         }),
         // enable processing of Pug files defined in webpack entry

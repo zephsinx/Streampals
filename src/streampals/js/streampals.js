@@ -19,7 +19,7 @@ let config;
 let first = true;
 
 // Get config settings
-getStreamWormsConfig()
+getStreampalsConfig()
     .then(configVal => {
         config = configVal;
         tagName = getTagNameFromFile(config.contentType);
@@ -84,10 +84,10 @@ function setMediaUrl(element, config) {
 
 //#endregion
 
-//#region StreamWorms configuration methods
+//#region Streampals configuration methods
 
-// Get StreamWorms config
-async function getStreamWormsConfig() {
+// Get Streampals config
+async function getStreampalsConfig() {
     let urlParams = getUrlParams();
     let config = await createConfig(urlParams);
     return validateConfig(config);
