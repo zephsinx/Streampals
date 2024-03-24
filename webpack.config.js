@@ -10,8 +10,7 @@ const __dirname = path.dirname(__filename);
 
 const config = {
     entry: {
-        index: './src/streamworms/views/streamworms.pug?pageData='
-            + JSON.stringify(pageData)
+        index: './src/streamworms/views/streamworms.pug?pageData=' + JSON.stringify(pageData)
     },
     devtool: 'source-map',
     optimization: {

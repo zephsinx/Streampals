@@ -1,6 +1,7 @@
 // streamworms constants.
 const DefaultMinMinutes = 30;
 const DefaultMaxMinutes = 90;
+const DefaultMediaDurationSeconds = 5;
 
 const DefaultMaxHeight = "25"; // Percentage value
 const DefaultMaxWidth = "25"; // Percentage value
@@ -18,6 +19,7 @@ export default Object.freeze({
     DefaultMaxMinutes: DefaultMaxMinutes,
     DefaultMaxHeight: DefaultMaxHeight,
     DefaultMaxWidth: DefaultMaxWidth,
+    DefaultMediaDurationSeconds: DefaultMediaDurationSeconds,
     ZeroMediaDurationWarning: ZeroMediaDurationWarning,
     ContentTypeNotFoundError: ContentTypeNotFoundError,
     ContentTypeNotSupportedError: ContentTypeNotSupportedError,
