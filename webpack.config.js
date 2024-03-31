@@ -21,7 +21,6 @@ const config = {
         new CopyPlugin({
             patterns: [
                 {from: "./src/streampals/media", to: "./media"},
-                {from: "./src/streampals/js/resources", to: "./js/resources"},
                 {from: "./src/streampals/favicon.ico", to: "./"},
             ],
         }),
