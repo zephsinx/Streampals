@@ -1,21 +1,4 @@
-﻿/*
-1. There are 4 quadrants (0-3)
-   - Quadrants are numbered left to right, top to bottom, as such:
-       | 0 | 1 |
-       | 2 | 3 |
-   - Evens on the left, odds on the right
-2. Each quadrant is window.innerWidth * 0.25 in width and window.innerHeight * 0.25 in height
-3. Pick a quadrant (0-3) via random int
-   - Should be different to the previous quadrant
-4. Generate random x and y coordinates within the quadrant size
-    - If odd quadrant, recalculate quadrant x if quadrant x + mediaWidth > quadrantWidth
-    - If quadrant > 1, recalculate quadrant y if quadrant y + mediaHeight > quadrantHeight
-5. Set the media x and y coordinates
-   - If odd quadrant, x = (window.innerWidth * 0.5) + quadrant x
-   - If even quadrant, x = quadrant x
-   - If quadrant > 1, y = window.innerHeight * 0.5 + quadrant y
-   - If quadrant < 1, y = quadrant y
-*/
+﻿// Get media coordinate styles for a random screen quadrant
 const getMediaCoordinateStyles = function (lastQuadrant, mediaHeight, mediaWidth) {
     let x;
     let y;

@@ -11,7 +11,7 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
 ### Changed
 
-- StreamWorms can now run in any environment, without the need of Node.js.
+- Streampals can now run in any environment, without the need of Node.js.
   - i.e. `dist` folder is now self-contained, having everything needed to run the app.- Default media file is now pulled from [media.json](./dist/js/resources/media.json) file, which can be modified as
   needed.
 - `dist` files no longer use Pug templates, opting for compiled HTML file.
@@ -37,7 +37,7 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
 ## Changed
 
-- Renamed StreamerWorm to StreamWorms.
+- Renamed StreamerWorm to Streampals.
 
 ## [0.6.0] - 2023-01-01
 

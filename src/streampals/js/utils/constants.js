@@ -1,4 +1,4 @@
-// streamworms constants.
+// streampals constants.
 const DefaultMinMinutes = 30;
 const DefaultMaxMinutes = 90;
 const DefaultMediaDurationSeconds = 5;

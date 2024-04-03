@@ -19,7 +19,7 @@ let config;
 let first = true;
 
 // Get config settings
-getStreamWormsConfig()
+getStreampalsConfig()
     .then(configVal => {
         config = configVal;
         tagName = getTagNameFromFile(config.contentType);
@@ -28,15 +28,21 @@ getStreamWormsConfig()
     .then(() => {
         // Create and append media element to media div
         mediaDiv.appendChild(element);
-        playMedia(element);
+        // Get the height and width of the media element
+        element.onload = () => {
+            // Remove the onload event listener after the first load
+            element.onload = null;
+            playMediaLoop(element);
+        };
     });
 
 //#region Media Methods
 
-// Shows and plays media after a random delay, then hides the media after durationMillis expires
-function playMedia(element) {
+// Plays media after a random delay, then hides the media after durationMillis expires, and requeues the media timer
+function playMediaLoop(element) {
     let delay = utils.randomIntFromInterval(config.minDelay, config.maxDelay);
     if (first) {
+        setPosition(element);
         delay = 0;
         first = false;
     }
@@ -44,8 +50,7 @@ function playMedia(element) {
     setTimeout(() => {
         // Reset image source to replay in the case of a GIF
         if (tagName === 'img') {
-            element.src = '';
-            element.src = config.mediaUrl;
+            setMediaUrl(element, config);
         }
         // Restart video and play in the case of a WebM
         else {
@@ -59,13 +64,13 @@ function playMedia(element) {
         setTimeout(() => {
             mediaDiv.style.visibility = 'hidden';
             setPosition(element);
-            setMediaUrl(element, config);
-            playMedia(element);
+            playMediaLoop(element);
         }, config.mediaDuration);
     }, delay);
 }
 
 let lastQuadrant;
+
 // Set position of media element on page
 function setPosition(element) {
     let coordinates = utils.getMediaCoordinateStyles(lastQuadrant, element.height, element.width);
@@ -76,18 +81,21 @@ function setPosition(element) {
 
 // Check if we should randomize the media
 function setMediaUrl(element, config) {
+    element.src = '';
     if (config.randomImage) {
         let randomIndex = Math.floor(Math.random() * config.mediaPaths.length);
         element.src = config.mediaPaths[randomIndex];
+    } else {
+        element.src = config.mediaUrl;
     }
 }
 
 //#endregion
 
-//#region StreamWorms configuration methods
+//#region Streampals configuration methods
 
-// Get StreamWorms config
-async function getStreamWormsConfig() {
+// Get Streampals config
+async function getStreampalsConfig() {
     let urlParams = getUrlParams();
     let config = await createConfig(urlParams);
     return validateConfig(config);
@@ -107,31 +115,20 @@ async function createConfig(urlParams) {
     const maxWidth = isValidNumericValue(urlParams.maxWidth) ? urlParams.maxWidth : constants.DefaultMaxWidth;
     let randomImage = (urlParams.randomImage === undefined || urlParams.randomImage === null) ? true : urlParams.randomImage === 'true';
 
-    console.log(`randomize = ${randomImage}`);
-
     const mediaFile = await getMediaFile(urlParams.mediaUrl);
-    const mediaPaths = mediaFile.mediaPaths;
+    const mediaPaths = mediaFile.mediaPaths || [];
 
-    let mediaUrl;
-    if (randomImage && mediaPaths.length > 0) {
-        const randomIndex = Math.floor(Math.random() * mediaPaths.length);
-        mediaUrl = mediaPaths[randomIndex];
-    }
-
-    if (mediaPaths.length > 0) {
-        const randomIndex = Math.floor(Math.random() * mediaPaths.length);
-        mediaUrl = mediaPaths[randomIndex];
-    }
+    let mediaPath = getMediaUrl(mediaFile.mediaPath, mediaFile.mediaPaths, randomImage);
 
     let mediaDuration = urlParams.mediaDuration;
     // Get content type from file extension
-    let extension = mediaUrl.split('.').pop().split('?')[0];
+    let extension = mediaPath.split('.').pop().split('?')[0];
     let contentType = getContentTypeFromFileExtension(extension);
 
     if (!isValidNumericValue(mediaDuration) || contentType === '') {
         let mediaInfo;
         try {
-            mediaInfo = await fetchMediaInfo(mediaUrl);
+            mediaInfo = await fetchMediaInfo(mediaPath);
             if (contentType === '') {
                 contentType = mediaInfo.contentType;
             }
@@ -150,7 +147,7 @@ async function createConfig(urlParams) {
         minDelay: minDelayMillis,
         maxHeight: maxHeight,
         maxWidth: maxWidth,
-        mediaUrl: mediaUrl,
+        mediaUrl: mediaPath,
         mediaPaths: mediaPaths,
         mediaDuration: mediaDuration,
         contentType: contentType,
@@ -160,11 +157,11 @@ async function createConfig(urlParams) {
 
 async function getMediaFile(urlParamMediaUrl) {
     if (urlParamMediaUrl) {
-        return urlParamMediaUrl;
+        return {mediaPath: urlParamMediaUrl, mediaPaths: []};
     }
 
     // Fetch media file
-    let mediaFile = await fetch('/js/resources/media.json', {mode: 'cors'})
+    let mediaFile = await fetch('/media/media.json', {mode: 'cors'})
         .then(res => {
             if (res.ok) {
                 return res.json();
@@ -175,27 +172,21 @@ async function getMediaFile(urlParamMediaUrl) {
             console.log(err);
         });
 
-    return mediaFile || { mediaPath: DefaultMediaUrl, mediaPaths: [] };
+    return mediaFile || {mediaPath: DefaultMediaUrl, mediaPaths: []};
 }
 
-async function getMediaUrl(urlParamMediaUrl) {
-    if (urlParamMediaUrl) {
-        return urlParamMediaUrl;
+// Get media URL
+function getMediaUrl(mediaPath, mediaPaths, randomImage) {
+    if (mediaPath) {
+        return mediaPath;
+    } else if (mediaPaths.length > 0) {
+        if (randomImage) {
+            const randomIndex = Math.floor(Math.random() * mediaPaths.length);
+            return mediaPaths[randomIndex];
+        }
+        return mediaPaths[0];
     }
-
-    // Fetch media file
-    let mediaFile = await fetch('/js/resources/media.json', {mode: 'cors'})
-        .then(res => {
-            if (res.ok) {
-                return res.json();
-            }
-            return Promise.reject(res);
-        })
-        .catch((err) => {
-            console.log(err);
-        });
-
-    return mediaFile.mediaPath || defaultMediaUrl;
+    return DefaultMediaUrl;
 }
 
 // Validate and update config if invalid.
@@ -240,7 +231,7 @@ async function fetchMediaInfo(mediaUrl) {
             return Promise.reject(res);
         })
         .then(res => res.arrayBuffer())
-        .then(ab => getMediaDuration(new Uint8Array(ab)))
+        .then(ab => calculateMediaDuration(new Uint8Array(ab)))
         .catch(err => {
             throw new Error(constants.FetchImageError.replace('{0}', mediaUrl).replace('{1}', `${err.status} - ${err.statusText}`));
         });
@@ -249,7 +240,7 @@ async function fetchMediaInfo(mediaUrl) {
 }
 
 // Fancy method to get Media length
-function getMediaDuration(uint8) {
+function calculateMediaDuration(uint8) {
     let duration = 0;
     for (let i = 0; i < uint8.length; i++) {
         if (uint8[i] === 0x21
@@ -282,6 +273,7 @@ function prepareElement(tagName, config) {
 
     switch (tagName) {
         case 'img':
+            setMediaUrl(mediaElement, config);
             return mediaElement;
         case 'video':
             return configureVideoElement(mediaElement, config);
