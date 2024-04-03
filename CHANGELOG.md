@@ -7,13 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
-## [0.8.0] - Unreleased
+## [0.8.1] - 2023-04-02
+
+### Added
+
+- Multiple media files can now be added, and Streampals will cycle between them at random.
 
 ### Changed
 
-- Streampals can now run in any environment, without the need of Node.js.
-  - i.e. `dist` folder is now self-contained, having everything needed to run the app.- Default media file is now pulled from [media.json](./dist/js/resources/media.json) file, which can be modified as
-  needed.
+- StreamWorms renamed to Streampals
+
+### Fixed
+
+- Worms no longer start on the top left of the screen on every restart.
+
+## [0.8.0] - 2023-02-12
+
+### Changed
+
+- StreamWorms can now run in any environment, without the need of Node.js.
+    - i.e. `dist` folder is now self-contained, having everything needed to run the app.- Default media file is now
+      pulled from [media.json](./dist/media/media.json) file, which can be modified as
+      needed.
 - `dist` files no longer use Pug templates, opting for compiled HTML file.
 
 ## [0.7.1] - 2023-01-18
@@ -37,7 +52,7 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
 ## Changed
 
-- Renamed StreamerWorm to Streampals.
+- Renamed StreamerWorm to StreamWorms.
 
 ## [0.6.0] - 2023-01-01
 
