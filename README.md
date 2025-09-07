@@ -140,4 +140,9 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 - Credit for the idea for Streampals goes to Mark Dudlik. Find his work at [dudlik.co](https://dudlik.co), or
   streaming on Twitch
   at [twitch.tv/dudlik](https://twitch.tv/dudlik) ![Twitch channel](https://img.shields.io/twitch/status/dudlik?style=social)
-- Credit to the temporary worm GIF being used goes to Michelle Porucznik. See more of their work at <https://porucz.com/>
+- Credit for the worm GIFs goes to:
+  - Michelle Porucznik - [porucz.com](https://porucz.com/)
+  - Shenja Tatschke - [shenjatatschke.com](https://www.shenjatatschke.com/)
+  - Kat G Morris - [katgmorris.com](https://www.katgmorris.com/)
+  - Alex Strasser - [alexstrasser.com](https://www.alexstrasser.com/)
+  - Magda Kreps - [magdakreps.com](https://magdakreps.com/)
