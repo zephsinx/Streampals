@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  base: "/Streampals/",
   build: {
     outDir: "dist",
     sourcemap: true,
