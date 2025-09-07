@@ -9,7 +9,7 @@ Just a lil' pal popping up on your stream.
 When added as a browser source to your streaming software of choice (e.g. OBS), a lil' pal will appear after a random
 amount of time on a corner of your screen. Why? Because it's fun!
 
-### Table of Contents
+## Table of Contents
 
 - [Prerequisites](#prerequisites)
 - [Installing](#installing)
@@ -26,62 +26,73 @@ purposes. See deployment for notes on how to deploy the project on a live system
 Before you begin, ensure you have met the following requirements:
 
 - Download and install [Node.js](https://nodejs.org/en/download/) matching for your operating system.
-    - The LTS (Long-term Support) version is recommended for most users.
+  - The LTS (Long-term Support) version is recommended for most users.
+- For deployment, any static hosting service (Netlify, Vercel, GitHub Pages, etc.)
 
 ### Installing
 
 1. Download the code and go to the Streampals folder.
-2. Build the project by running: `npm install`
-3. Run the project: `node index.js`
+2. Install dependencies: `npm install`
+3. For development: `npm run dev` (starts Vite dev server on http://localhost:5173)
+4. For production build: `npm run build`
+5. For testing production build: `npm run serve` (starts Vite preview server on http://localhost:4173)
 
 ## Deployment
 
-### Deploy as website
+### Static Hosting
 
-All the files you need to host Streampals are within the [dist](./dist) folder.
+Streampals is now a static web application that can be deployed to any static hosting service.
 
-Steps:
+#### Build for Production
 
-1. Download the files, and place the files from the [dist](./dist) folder wherever you want to keep them.
-2. In your server hosting, point the desired path to the [streampals.html](./dist/streampals.html) file from
-   the `dist` folder.
-3. That should be all!
+1. Run `npm run build` to create the production build
+2. The built files will be in the `dist` folder
 
-### Docker
+#### Deploy to Static Hosting Services
 
-Streampals is also available as a Docker image
-on [Docker Hub](https://hub.docker.com/repository/docker/zephsinx/streampals).
+**Netlify:**
 
-To use, run the following command and replace `[PORT]` with the port you want the application to run on:
+1. Connect your GitHub repository to Netlify
+2. Set build command: `npm run build`
+3. Set publish directory: `dist`
+4. Deploy!
 
-```shell
-docker run -it -d -p [PORT]:3000 zephsinx/streampals:latest
-```
+**Vercel:**
 
-For example, the following will make the application run on port `3123`.
+1. Connect your GitHub repository to Vercel
+2. Vercel will automatically detect Vite and configure the build
+3. Deploy!
 
-```shell
-docker run -it -d -p 3123:3000 zephsinx/streampals:latest
-```
+**GitHub Pages:**
+
+1. Enable GitHub Pages in repository settings
+2. Set source to GitHub Actions
+3. Create `.github/workflows/deploy.yml` with Vite build action
+4. Push to trigger deployment
+
+**Manual Deployment:**
+
+1. Upload the contents of the `dist` folder to your web server
+2. Point your domain to the `index.html` file
+3. That's it!
 
 ## How to Use
 
 ### Browser Source configuration
 
 1. Add a new Browser Source to your broadcasting software (e.g. [OBS](https://obsproject.com/kb/browser-source)).
-2. In the URL field, enter `https://streampals.zephsinx.com`.
-    1. If running locally, use `http://localhost:3000`
+2. In the URL field, enter your deployed URL (e.g., `https://your-domain.com` or `https://streampals.zephsinx.com`).
+   1. If running locally, use `http://localhost:5173` (dev server) or `http://localhost:4173` (preview server)
 3. Enjoy!
 
 ### Configuring Behavior
 
-The default behavior of Streampals can be modified by adding query parameters to the Streampals URL. Hosted URL
-coming soon.
+The default behavior of Streampals can be modified by adding query parameters to the Streampals URL.
 
 Example:
 
-```
-https://streampals.zephsinx.com?skipDelay=true&maxWidth=30&maxHeight=45
+```markdown
+https://your-domain.com?skipDelay=true&maxWidth=30&maxHeight=45
 ```
 
 The displayed media can be overriden using the `mediaUrl` parameter. Keep in mind, while Streampals attempts to
@@ -90,14 +101,14 @@ parameter.
 
 For example:
 
-```
-https://streampals.zephsinx.com?mediaUrl=https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif&mediaDuration=2.75
+```markdown
+https://your-domain.com?mediaUrl=https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif&mediaDuration=2.75
 ```
 
 #### Available Parameters
 
 | Parameter       | Type    | Default             | Description                                                                                                                                                                 |
-|-----------------|---------|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------- | ------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `skipDelay`     | `bool`  | `false`             | Whether to skip the delay between media plays                                                                                                                               |
 | `min`           | `float` | `30`                | The minimum amount time to wait between media plays in minutes                                                                                                              |
 | `max`           | `float` | `90`                | The maximum amount of time to wait between media plays in minutes                                                                                                           |
@@ -115,8 +126,8 @@ Please note that any release prior to 1.0.0 should be expected to contain breaki
 
 ## Authors
 
-* **zephsinx** - *Development* - [zephsinx](https://github.com/zephsinx)
-* **Dudlik** - *Main idea & design consultation* - [ttv/Dudlik](https://twitch.tv/dudlik), [Dudlik](https://dudlik.co)
+- **zephsinx** - _Development_ - [zephsinx](https://github.com/zephsinx)
+- **Dudlik** - _Main idea & design consultation_ - [ttv/Dudlik](https://twitch.tv/dudlik), [Dudlik](https://dudlik.co)
 
 See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
@@ -126,7 +137,7 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-* Credit for the idea for Streampals goes to Mark Dudlik. Find his work at [dudlik.co](https://dudlik.co), or
+- Credit for the idea for Streampals goes to Mark Dudlik. Find his work at [dudlik.co](https://dudlik.co), or
   streaming on Twitch
   at [twitch.tv/dudlik](https://twitch.tv/dudlik) ![Twitch channel](https://img.shields.io/twitch/status/dudlik?style=social)
-* Credit to the temporary worm GIF being used goes to Michelle Porucznik. See more of their work at https://porucz.com/
+- Credit to the temporary worm GIF being used goes to Michelle Porucznik. See more of their work at <https://porucz.com/>

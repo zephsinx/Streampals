@@ -482,3 +482,8 @@ $RECYCLE.BIN/
 # Project files
 .env
 /dist/
+
+# Cursor files
+.cursor
+stm/
+shrimp-rules.md
