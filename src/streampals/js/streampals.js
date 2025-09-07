@@ -18,6 +18,13 @@ let element;
 let config;
 let first = true;
 
+// Shuffle and cycle variables for media selection
+let shuffledMediaPaths = [];
+let currentMediaIndex = 0;
+
+// Duration cache for individual media files
+let mediaDurationCache = {};
+
 // Get config settings
 getStreampalsConfig()
   .then((configVal) => {
@@ -37,6 +44,41 @@ getStreampalsConfig()
   });
 
 //#region Media Methods
+
+// Shuffle array using Fisher-Yates algorithm
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+// Get cached media duration, calculating and caching if not available
+async function getCachedMediaDuration(mediaPath) {
+  // Return cached duration if available
+  if (mediaDurationCache[mediaPath]) {
+    return mediaDurationCache[mediaPath];
+  }
+
+  // Calculate and cache duration
+  const fileName = mediaPath.split("/").pop();
+  console.log(`Preloading duration for: ${fileName}`);
+
+  try {
+    const mediaInfo = await fetchMediaInfo(mediaPath);
+    mediaDurationCache[mediaPath] = mediaInfo.duration;
+    console.log(`Duration cached: ${fileName} = ${mediaInfo.duration}ms`);
+    return mediaInfo.duration;
+  } catch (error) {
+    console.log(
+      `Using default duration for ${fileName} (${DefaultMediaDurationMillis}ms)`
+    );
+    mediaDurationCache[mediaPath] = DefaultMediaDurationMillis;
+    return DefaultMediaDurationMillis;
+  }
+}
 
 // Plays media after a random delay, then hides the media after durationMillis expires, and requeues the media timer
 function playMediaLoop(element) {
@@ -60,12 +102,19 @@ function playMediaLoop(element) {
     // Make media visible
     mediaDiv.style.visibility = "visible";
 
-    // Hide image/video after it plays for the desired duration, and requeue the media timer
-    setTimeout(() => {
-      mediaDiv.style.visibility = "hidden";
-      setPosition(element);
-      playMediaLoop(element);
-    }, config.mediaDuration);
+    // Get duration for current media and hide after it plays
+    const currentMediaPath = element.src;
+    getCachedMediaDuration(currentMediaPath).then((duration) => {
+      // Temporary console log for debugging
+      const fileName = currentMediaPath.split("/").pop();
+      console.log(`Media spawned: ${fileName} (duration: ${duration}ms)`);
+
+      setTimeout(() => {
+        mediaDiv.style.visibility = "hidden";
+        setPosition(element);
+        playMediaLoop(element);
+      }, duration);
+    });
   }, delay);
 }
 
@@ -87,10 +136,22 @@ function setPosition(element) {
 function setMediaUrl(element, config) {
   element.src = "";
   if (config.randomImage) {
-    let randomIndex = Math.floor(Math.random() * config.mediaPaths.length);
-    element.src = config.mediaPaths[randomIndex];
+    // Initialize shuffled array if empty or if we've cycled through all items
+    if (
+      shuffledMediaPaths.length === 0 ||
+      currentMediaIndex >= shuffledMediaPaths.length
+    ) {
+      shuffledMediaPaths = shuffleArray(config.mediaPaths);
+      currentMediaIndex = 0;
+    }
+
+    // Add cache busting parameter to force GIF restart
+    const mediaPath = shuffledMediaPaths[currentMediaIndex];
+    element.src = mediaPath + "?t=" + Date.now();
+    currentMediaIndex++;
   } else {
-    element.src = config.mediaUrl;
+    // Add cache busting parameter to force GIF restart
+    element.src = config.mediaUrl + "?t=" + Date.now();
   }
 }
 
@@ -206,8 +267,12 @@ function getMediaUrl(mediaPath, mediaPaths, randomImage) {
     return mediaPath;
   } else if (mediaPaths.length > 0) {
     if (randomImage) {
-      const randomIndex = Math.floor(Math.random() * mediaPaths.length);
-      return mediaPaths[randomIndex];
+      // Initialize shuffled array for initial selection
+      if (shuffledMediaPaths.length === 0) {
+        shuffledMediaPaths = shuffleArray(mediaPaths);
+        currentMediaIndex = 0;
+      }
+      return shuffledMediaPaths[currentMediaIndex];
     }
     return mediaPaths[0];
   }
