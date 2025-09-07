@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
+## [0.9.0] - 2025-09-07
+
+### Added
+
+- New worm GIFs from multiple artists
+
+### Changed
+
+- Updated acknowledgments to credit new worm GIF contributors
+- Build system changed from webpack to Vite
+- Removed Express server dependencies
+- Implemented asset shuffling for randomized media selection
+
 ## [0.8.1] - 2023-04-02
 
 ### Added
