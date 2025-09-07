@@ -33,9 +33,9 @@ Before you begin, ensure you have met the following requirements:
 
 1. Download the code and go to the Streampals folder.
 2. Install dependencies: `npm install`
-3. For development: `npm run dev` (starts Vite dev server on http://localhost:5173)
+3. For development: `npm run dev` (starts Vite dev server on <http://localhost:5173>)
 4. For production build: `npm run build`
-5. For testing production build: `npm run serve` (starts Vite preview server on http://localhost:4173)
+5. For testing production build: `npm run serve` (starts Vite preview server on <http://localhost:4173>)
 
 ## Deployment
 
