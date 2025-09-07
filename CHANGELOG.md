@@ -26,9 +26,9 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 ### Changed
 
 - StreamWorms can now run in any environment, without the need of Node.js.
-    - i.e. `dist` folder is now self-contained, having everything needed to run the app.- Default media file is now
-      pulled from [media.json](./dist/media/media.json) file, which can be modified as
-      needed.
+  - i.e. `dist` folder is now self-contained, having everything needed to run the app.- Default media file is now
+    pulled from [media.json](./dist/media/media.json) file, which can be modified as
+    needed.
 - `dist` files no longer use Pug templates, opting for compiled HTML file.
 
 ## [0.7.1] - 2023-01-18
@@ -77,7 +77,7 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 ### Added
 
 - Add `mediaDuration` query parameter to override media duration calculation.
-    - Helpful for times when the built-in media calculation does not work.
+  - Helpful for times when the built-in media calculation does not work.
 - App throws error when media duration is `0`. Can be overridden by passing `mediaDuration`.
 
 ### Changed
@@ -111,7 +111,7 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 ### Added
 
 - Max media dimensions can be set via the `maxHeight` and `maxWidth` query parameters.
-    - Media will be shrunk to fit the smallest of the two values.
+  - Media will be shrunk to fit the smallest of the two values.
 - LICENSE file added.
 
 ### Changed
