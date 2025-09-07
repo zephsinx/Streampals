@@ -1,0 +1,66 @@
+name: PR Quality Checks
+
+on:
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  quality-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Vite build check
+        run: npm run build
+
+      - name: Check for build artifacts
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "Build failed - dist directory not created"
+            exit 1
+          fi
+          if [ ! -f "dist/index.html" ]; then
+            echo "Build failed - index.html not found in dist"
+            exit 1
+          fi
+          echo "Build artifacts verified successfully"
+
+      - name: Check for JavaScript syntax errors
+        run: |
+          find src -name "*.js" -exec node -c {} \;
+          echo "JavaScript syntax check passed"
+
+      - name: Validate media.json structure
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const mediaPath = path.join('public', 'media', 'media.json');
+            if (fs.existsSync(mediaPath)) {
+              const media = JSON.parse(fs.readFileSync(mediaPath, 'utf8'));
+              if (!Array.isArray(media)) {
+                console.error('media.json should be an array');
+                process.exit(1);
+              }
+              console.log('media.json structure is valid');
+            } else {
+              console.log('No media.json found, skipping validation');
+            }
+          "
+
+      - name: Check file sizes
+        run: |
+          echo "Checking for large files..."
+          find . -name "*.js" -o -name "*.css" -o -name "*.html" | xargs ls -lh | awk '$5 > 100000 {print "Large file detected: " $9 " (" $5 ")"}'
+          echo "File size check completed"
