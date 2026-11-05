@@ -6,7 +6,8 @@ import utils from "./utils/utils.js";
 const DefaultMediaDurationMillis = constants.DefaultMediaDurationSeconds * 1000;
 const DefaultMinMillis = constants.DefaultMinMinutes * 60 * 1000;
 const DefaultMaxMillis = constants.DefaultMaxMinutes * 60 * 1000;
-const DefaultMediaUrl = "/media/worms.gif";
+const MediaDir = "media/";
+const DefaultMediaUrl = MediaDir + "worms.gif";
 
 // Div containing the media to display
 const mediaDiv = document.getElementById("media-div");
@@ -33,15 +34,36 @@ getStreampalsConfig()
     element = prepareElement(tagName, config);
   })
   .then(() => {
-    // Create and append media element to media div
     mediaDiv.appendChild(element);
-    // Get the height and width of the media element
-    element.onload = () => {
-      // Remove the onload event listener after the first load
-      element.onload = null;
-      playMediaLoop(element);
-    };
-  });
+    element.addEventListener(tagName === "video" ? "loadeddata" : "load", () => startLoop(element), { once: true });
+    element.querySelectorAll("source").forEach((source) => source.addEventListener("error", onMediaError));
+    element.addEventListener("error", (event) => {
+      onMediaError(event);
+      startLoop(element);
+    });
+  })
+  .catch(showError);
+
+let loopStarted = false;
+
+// Start the loop once
+function startLoop(element) {
+  if (loopStarted) return;
+  loopStarted = true;
+  playMediaLoop(element);
+}
+
+// Prevent unloadable media file from stopping the rotation
+function onMediaError(event) {
+  console.error(`Unable to load media: ${event.target.src || event.target.currentSrc}`, event);
+}
+
+// Show startup errors in the browser source, since it has no visible console
+function showError(error) {
+  console.error(error);
+  mediaDiv.textContent = error instanceof Error ? error.message : "Unable to load the media. Check the mediaUrl parameter.";
+  mediaDiv.style.visibility = "visible";
+}
 
 //#region Media Methods
 
@@ -57,27 +79,36 @@ function shuffleArray(array) {
 
 // Get cached media duration, calculating and caching if not available
 async function getCachedMediaDuration(mediaPath) {
-  // Return cached duration if available
-  if (mediaDurationCache[mediaPath]) {
-    return mediaDurationCache[mediaPath];
+  // src is cache-busted with ?t=, so the cache key ignores the query string
+  const cacheKey = mediaPath.split("?")[0];
+  if (mediaDurationCache[cacheKey] !== undefined) {
+    return mediaDurationCache[cacheKey];
   }
 
-  // Calculate and cache duration
-  const fileName = mediaPath.split("/").pop();
+  const fileName = cacheKey.split("/").pop();
   console.log(`Preloading duration for: ${fileName}`);
 
   try {
     const mediaInfo = await fetchMediaInfo(mediaPath);
-    mediaDurationCache[mediaPath] = mediaInfo.duration;
-    console.log(`Duration cached: ${fileName} = ${mediaInfo.duration}ms`);
-    return mediaInfo.duration;
+    if (!mediaInfo.duration) console.warn(constants.ZeroMediaDurationWarning);
+    const duration = mediaInfo.duration || DefaultMediaDurationMillis;
+    mediaDurationCache[cacheKey] = duration;
+    console.log(`Duration cached: ${fileName} = ${duration}ms`);
+    return duration;
   } catch (error) {
-    console.log(
-      `Using default duration for ${fileName} (${DefaultMediaDurationMillis}ms)`
-    );
-    mediaDurationCache[mediaPath] = DefaultMediaDurationMillis;
+    console.log(`Using default duration for ${fileName} (${DefaultMediaDurationMillis}ms)`);
+    mediaDurationCache[cacheKey] = DefaultMediaDurationMillis;
     return DefaultMediaDurationMillis;
   }
+}
+
+// Get display duration for the current media: user override, then the video's own length, then the measured file
+function getPlayDuration() {
+  if (config.mediaDuration)
+    return Promise.resolve(config.mediaDuration);
+  if (tagName === "video")
+    return Promise.resolve(element.duration * 1000);
+  return getCachedMediaDuration(element.src);
 }
 
 // Plays media after a random delay, then hides the media after durationMillis expires, and requeues the media timer
@@ -97,16 +128,15 @@ function playMediaLoop(element) {
     // Restart video and play in the case of a WebM
     else {
       element.currentTime = 0;
-      element.play();
+      element.play().catch((error) => console.warn(error));
     }
     // Make media visible
     mediaDiv.style.visibility = "visible";
 
     // Get duration for current media and hide after it plays
-    const currentMediaPath = element.src;
-    getCachedMediaDuration(currentMediaPath).then((duration) => {
-      // Temporary console log for debugging
-      const fileName = currentMediaPath.split("/").pop();
+    getPlayDuration().then((measured) => {
+      const duration = Number.isFinite(measured) && measured > 0 ? measured : DefaultMediaDurationMillis;
+      const fileName = (element.src || element.currentSrc || tagName).split("/").pop();
       console.log(`Media spawned: ${fileName} (duration: ${duration}ms)`);
 
       setTimeout(() => {
@@ -122,17 +152,20 @@ let lastQuadrant;
 
 // Set position of media element on page
 function setPosition(element) {
-  let coordinates = utils.getMediaCoordinateStyles(
-    lastQuadrant,
-    element.height,
-    element.width
-  );
+  // Use the rendered size: <video> has no intrinsic width/height attributes
+  const { height, width } = element.getBoundingClientRect();
+  let coordinates = utils.getMediaCoordinateStyles(lastQuadrant, height, width);
   lastQuadrant = coordinates.quadrant;
   element.style.left = coordinates.left;
   element.style.top = coordinates.top;
 }
 
-// Check if we should randomize the media
+// Build a cache busted URL
+function withCacheBuster(url) {
+  return url + (url.includes("?") ? "&" : "?") + "t=" + Date.now();
+}
+
+// Set the media source, from the shuffled list or the single mediaUrl
 function setMediaUrl(element, config) {
   element.src = "";
   if (config.randomImage) {
@@ -145,13 +178,10 @@ function setMediaUrl(element, config) {
       currentMediaIndex = 0;
     }
 
-    // Add cache busting parameter to force GIF restart
-    const mediaPath = shuffledMediaPaths[currentMediaIndex];
-    element.src = mediaPath + "?t=" + Date.now();
+    element.src = withCacheBuster(shuffledMediaPaths[currentMediaIndex]);
     currentMediaIndex++;
   } else {
-    // Add cache busting parameter to force GIF restart
-    element.src = config.mediaUrl + "?t=" + Date.now();
+    element.src = withCacheBuster(config.mediaUrl);
   }
 }
 
@@ -161,74 +191,47 @@ function setMediaUrl(element, config) {
 
 // Get Streampals config
 async function getStreampalsConfig() {
-  let urlParams = getUrlParams();
-  let config = await createConfig(urlParams);
-  return validateConfig(config);
-}
-
-function getUrlParams() {
-  return new Proxy(new URLSearchParams(window.location.search), {
-    get: (searchParams, prop) => searchParams.get(prop || ""),
-  });
+  const urlParams = Object.fromEntries(new URLSearchParams(window.location.search));
+  return utils.validateConfig(await createConfig(urlParams));
 }
 
 async function createConfig(urlParams) {
   const skipDelay = urlParams.skipDelay === "true";
-  const maxDelayMillis = getDelayMillis(
-    skipDelay,
-    urlParams.max,
-    DefaultMaxMillis
-  );
-  const minDelayMillis = getDelayMillis(
-    skipDelay,
-    urlParams.min,
-    DefaultMinMillis
-  );
-  const maxHeight = isValidNumericValue(urlParams.maxHeight)
+  const maxDelayMillis = utils.getDelayMillis(skipDelay, urlParams.max, DefaultMaxMillis);
+  const minDelayMillis = utils.getDelayMillis(skipDelay, urlParams.min, DefaultMinMillis);
+  const maxHeight = utils.isValidNumericValue(urlParams.maxHeight)
     ? urlParams.maxHeight
     : constants.DefaultMaxHeight;
-  const maxWidth = isValidNumericValue(urlParams.maxWidth)
+  const maxWidth = utils.isValidNumericValue(urlParams.maxWidth)
     ? urlParams.maxWidth
     : constants.DefaultMaxWidth;
-  let randomImage =
-    urlParams.randomImage === undefined || urlParams.randomImage === null
-      ? true
-      : urlParams.randomImage === "true";
+  let randomImage = urlParams.randomImage === undefined ? true : urlParams.randomImage === "true";
 
   const mediaFile = await getMediaFile(urlParams.mediaUrl);
   const mediaPaths = mediaFile.mediaPaths || [];
+  // Only a media list can be shuffled. A single custom mediaUrl always plays itself.
+  randomImage = randomImage && mediaPaths.length > 0;
 
-  let mediaPath = getMediaUrl(
-    mediaFile.mediaPath,
-    mediaFile.mediaPaths,
-    randomImage
-  );
+  const mediaPath = getMediaUrl(mediaFile.mediaPath, mediaPaths, randomImage);
 
-  let mediaDuration = urlParams.mediaDuration;
+  // Overrides the measured duration for every media file, in milliseconds
+  const mediaDuration = utils.isValidNumericValue(urlParams.mediaDuration)
+    ? parseFloat(urlParams.mediaDuration) * 1000
+    : undefined;
+
   // Get content type from file extension
   let extension = mediaPath.split(".").pop().split("?")[0];
   let contentType = getContentTypeFromFileExtension(extension);
 
-  if (!isValidNumericValue(mediaDuration) || contentType === "") {
-    let mediaInfo;
+  if (contentType === "") {
     try {
-      mediaInfo = await fetchMediaInfo(mediaPath);
-      if (contentType === "") {
-        contentType = mediaInfo.contentType;
-      }
-      if (!isValidNumericValue(mediaDuration)) {
-        mediaDuration = mediaInfo.duration;
-      }
+      contentType = (await fetchMediaInfo(mediaPath)).contentType;
     } catch (error) {
-      console.log(
-        `Using default media duration of ${DefaultMediaDurationMillis} milliseconds`
-      );
-      mediaDuration = DefaultMediaDurationMillis;
+      console.log(`Unable to determine content type for ${mediaPath}`);
     }
   }
 
   return {
-    skipDelay: skipDelay,
     maxDelay: maxDelayMillis,
     minDelay: minDelayMillis,
     maxHeight: maxHeight,
@@ -247,7 +250,7 @@ async function getMediaFile(urlParamMediaUrl) {
   }
 
   // Fetch media file
-  let mediaFile = await fetch("/media/media.json")
+  let mediaFile = await fetch(MediaDir + "media.json")
     .then((res) => {
       if (res.ok) {
         return res.json();
@@ -279,40 +282,7 @@ function getMediaUrl(mediaPath, mediaPaths, randomImage) {
   return DefaultMediaUrl;
 }
 
-// Validate and update config if invalid.
-function validateConfig(config) {
-  // minDelayMillis must be less than or equal to maxDelayMillis, else use defaults
-  if (config.maxDelayMillis < config.minDelayMillis) {
-    config.maxDelayMillis = DefaultMaxMillis;
-    config.minDelayMillis = DefaultMinMillis;
-  }
-
-  if (config.mediaDuration === 0) {
-    throw new Error(constants.ZeroMediaDurationWarning);
-  }
-
-  return config;
-}
-
-// Validate and calculate delay in milliseconds from params
-function getDelayMillis(skipDelay, delayMinutes, defaultDelay) {
-  if (skipDelay) return 0;
-
-  return isValidNumericValue(delayMinutes)
-    ? delayMinutes * 60 * 1000
-    : defaultDelay;
-}
-
-// Check that provided string is a valid number and positive
-function isValidNumericValue(numberString) {
-  return (
-    !isNaN(numberString) &&
-    !isNaN(parseFloat(numberString)) &&
-    parseFloat(numberString) > 0
-  );
-}
-
-// Fetch media file
+// Fetch the file to read its content type and duration
 async function fetchMediaInfo(mediaUrl) {
   let contentType;
   let duration = await fetch(mediaUrl)
@@ -326,7 +296,7 @@ async function fetchMediaInfo(mediaUrl) {
       return Promise.reject(res);
     })
     .then((res) => res.arrayBuffer())
-    .then((ab) => calculateMediaDuration(new Uint8Array(ab)))
+    .then((ab) => utils.calculateMediaDuration(new Uint8Array(ab)))
     .catch((err) => {
       throw new Error(
         constants.FetchImageError.replace("{0}", mediaUrl).replace(
@@ -337,23 +307,6 @@ async function fetchMediaInfo(mediaUrl) {
     });
 
   return { contentType: contentType, duration: duration };
-}
-
-// Fancy method to get Media length
-function calculateMediaDuration(uint8) {
-  let duration = 0;
-  for (let i = 0; i < uint8.length; i++) {
-    if (
-      uint8[i] === 0x21 &&
-      uint8[i + 1] === 0xf9 &&
-      uint8[i + 2] === 0x04 &&
-      uint8[i + 7] === 0x00
-    ) {
-      const delay = (uint8[i + 5] << 8) | uint8[i + 4];
-      duration += delay < 2 ? 10 : delay;
-    }
-  }
-  return duration * 10;
 }
 
 //#endregion
@@ -409,28 +362,13 @@ function getContentTypeFromFileExtension(fileExtension) {
 
 // Get the appropriate element tag name from the media file extension
 function getTagNameFromFile(contentType) {
-  switch (contentType) {
-    case "image/avif":
-    case "image/gif":
-    case "image/jpeg":
-    case "image/png":
-    case "image/svg+xml":
-    case "image/webp":
-    case contentType.startsWith("image/"):
-      return "img";
-    case "video/webm":
-    case contentType.startsWith("video/"):
-      return "video";
-    default:
-      {
-        if (!contentType) console.warn(constants.ContentTypeNotFoundError);
-        else
-          console.warn(
-            constants.ContentTypeNotSupportedError.replace("{0}", contentType)
-          );
-      }
-      return "img";
-  }
+  if (contentType && contentType.startsWith("image/")) return "img";
+  if (contentType && contentType.startsWith("video/")) return "video";
+
+  if (!contentType) console.warn(constants.ContentTypeNotFoundError);
+  else console.warn(constants.ContentTypeNotSupportedError.replace("{0}", contentType));
+
+  return "img";
 }
 
 // Set Video properties
@@ -439,8 +377,9 @@ function configureVideoElement(videoElement, config) {
   videoSource.src = config.mediaUrl;
   videoSource.type = config.contentType;
 
-  // Note: autoplay only works in Chrome after a user has interacted with the DOM unless the muted tag is used
+  // Chrome only allows autoplay for muted video
   videoElement.autoplay = true;
+  videoElement.muted = true;
   videoElement.appendChild(videoSource);
 
   return videoElement;

@@ -11,7 +11,7 @@ const ZeroMediaDurationWarning = "Unable to calculate media duration for the req
 
 // Error messages
 const ContentTypeNotFoundError = "Unable to determine content type of from media URL. Defaulting to `img` tag";
-const ContentTypeNotSupportedError = "Content type not yet supported. Defaulting to `img` tag\". Content type found: `{0}`";
+const ContentTypeNotSupportedError = "Content type not yet supported. Defaulting to `img` tag. Content type found: `{0}`";
 const FetchImageError = "Error fetching image from URL '{0}'. Error status: '{1}'";
 
 export default Object.freeze({
