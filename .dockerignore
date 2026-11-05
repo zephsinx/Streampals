@@ -1,9 +1,0 @@
-.git
-.idea
-node_modules
-npm-debug.log
-src
-.gitignore
-Dockerfile
-.dockerignore
-webpack.config.js

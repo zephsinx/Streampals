@@ -23,3 +23,6 @@ jobs:
 
       - name: Run Vite build check
         run: npm run build
+
+      - name: Run tests
+        run: npm test

@@ -1,6 +1,6 @@
 {
   "name": "@zephsinx/streampals",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": true,
   "description": "A static web application for stream management.",
   "type": "module",
@@ -19,6 +19,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test": "node --test src/",
     "preview": "vite preview",
     "serve": "vite preview"
   },

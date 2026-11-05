@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: globalThis.GITHUB_REPOSITORY ? "/Streampals/" : "/",
+  base: "/",
   build: {
     outDir: "dist",
     sourcemap: true,

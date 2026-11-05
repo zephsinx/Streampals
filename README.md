@@ -95,9 +95,9 @@ Example:
 https://your-domain.com?skipDelay=true&maxWidth=30&maxHeight=45
 ```
 
-The displayed media can be overriden using the `mediaUrl` parameter. Keep in mind, while Streampals attempts to
-calculate the media duration, you may need to manually specify the display time (in seconds) via the `mediaDuration`
-parameter.
+The displayed media can be overridden using the `mediaUrl` parameter, which plays that single file instead of the
+shuffled list. Streampals calculates how long a GIF runs by reading its frame delays, so `mediaDuration` is only needed
+for other formats (for example a video or a static image).
 
 For example:
 
@@ -109,13 +109,14 @@ https://your-domain.com?mediaUrl=https://upload.wikimedia.org/wikipedia/commons/
 
 | Parameter       | Type    | Default             | Description                                                                                                                                                                 |
 | --------------- | ------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `skipDelay`     | `bool`  | `false`             | Whether to skip the delay between media plays                                                                                                                               |
-| `min`           | `float` | `30`                | The minimum amount time to wait between media plays in minutes                                                                                                              |
-| `max`           | `float` | `90`                | The maximum amount of time to wait between media plays in minutes                                                                                                           |
-| `maxHeight`     | `float` | `25`                | The maximum height of the media being displayed on screen. Value is a percentage of the total screen size                                                                   |
-| `maxWidth`      | `float` | `25`                | The minimum height of the media being displayed on screen. Value is a percentage of the total screen size                                                                   |
-| `mediaUrl`      | `float` | `default-media.gif` | Override URL of media to display. Used to provide a custom image or video to play                                                                                           |
-| `mediaDuration` | `float` | None (calculated)   | Duration of media in seconds (decimals are accepted). Streampals attempts to calculate the media duration, but in the case the calculation fails it should be provided here |
+| `skipDelay`     | `bool`   | `false`             | Whether to skip the delay between media plays                                                                                                                               |
+| `min`           | `float`  | `30`                | The minimum amount of time to wait between media plays in minutes                                                                                                           |
+| `max`           | `float`  | `90`                | The maximum amount of time to wait between media plays in minutes                                                                                                           |
+| `maxHeight`     | `float`  | `25`                | The maximum height of the media being displayed on screen. Value is a percentage of the total screen size                                                                   |
+| `maxWidth`      | `float`  | `25`                | The maximum width of the media being displayed on screen. Value is a percentage of the total screen size                                                                    |
+| `mediaUrl`      | `string` | shuffled list       | URL of a single media file to display instead of the shuffled list. Used to provide a custom image or video to play                                                         |
+| `mediaDuration` | `float`  | None (measured)     | How long each media file is displayed, in seconds (decimals are accepted). Applies to every media file, so set it when your media is not a GIF or you want a fixed time      |
+| `randomImage`   | `bool`   | `true`              | Whether to cycle through the files in `media/media.json` in random order. Set to `false` to always play the first one                                                      |
 
 ## Versioning
 

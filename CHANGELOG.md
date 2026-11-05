@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Note: All changes prior to v1.0.0 should be considered potentially breaking.
 
+## [0.10.0] - 2026-11-05
+
+### Added
+
+- Added unit tests for media and config helpers, run with `npm test`
+
+### Changed
+
+- Node.js v26 now required
+- Media paths in [media.json](./public/media/media.json) now relative, so the app works from any base path
+- `mediaUrl` now plays a single file, with `randomImage` only applying to the shuffled list
+
+### Fixed
+
+- Media no longer stops rotating when a file fails to load
+- Videos now autoplay, and their length is used as the display duration
+- Media with no measurable duration now uses the default display time
+- Worms no longer spawn off-screen or repeat a quadrant
+- Startup errors now shown in the browser source
+
+### Removed
+
+- Removed `Dockerfile` and `.dockerignore`, now that the app deploys as a static build
+- Removed unused `favicon.ico`
+
 ## [0.9.0] - 2025-09-07
 
 ### Added
@@ -39,9 +64,8 @@ Note: All changes prior to v1.0.0 should be considered potentially breaking.
 ### Changed
 
 - StreamWorms can now run in any environment, without the need of Node.js.
-  - i.e. `dist` folder is now self-contained, having everything needed to run the app.- Default media file is now
-    pulled from [media.json](./dist/media/media.json) file, which can be modified as
-    needed.
+  - i.e. `dist` folder is now self-contained, having everything needed to run the app.
+- Default media file is now pulled from [media.json](./dist/media/media.json) file, which can be modified as needed.
 - `dist` files no longer use Pug templates, opting for compiled HTML file.
 
 ## [0.7.1] - 2023-01-18
